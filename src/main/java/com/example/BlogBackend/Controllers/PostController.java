@@ -5,8 +5,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@RequestMapping("/post")
-public class PostController extends BaseController{
+@RestController
+@RequestMapping("/api/post")
+public class PostController{
 
     @GetMapping
     public String get(){

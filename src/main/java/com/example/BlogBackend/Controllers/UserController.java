@@ -20,9 +20,10 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
+@RestController
 @RequiredArgsConstructor
-@RequestMapping("/account")
-public class UserController  extends BaseController{
+@RequestMapping("/api/account")
+public class UserController extends BaseController {
     private final UserService userService;
     private final JwtTokenUtils jwtTokenUtils;
     private final PasswordEncoder passwordEncoder;
@@ -49,7 +50,7 @@ public class UserController  extends BaseController{
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
         } catch (BadCredentialsException e) {
-            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.UNAUTHORIZED.value(), "Неправильный логин или пароль"), HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Неправильный логин или пароль"), HttpStatus.BAD_REQUEST);
         }
 
         UserDto user = userService.loadUserByUsername(authRequest.getEmail());
