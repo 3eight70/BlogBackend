@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserService implements IUserService {
+public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 

@@ -22,7 +22,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class UserDto implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)

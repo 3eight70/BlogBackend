@@ -1,5 +1,6 @@
 package com.example.BlogBackend.Models.Post;
 
+import com.example.BlogBackend.Models.Comment.CommentDto;
 import com.example.BlogBackend.Models.TagDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -13,9 +14,11 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
+@Entity
+@Table(name="posts")
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostDto {
+public class PostFullDto {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -61,6 +64,10 @@ public class PostDto {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "tag_id")
     private List<TagDto> tags = new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "comment_id")
+    private List<CommentDto> comments = new ArrayList<>();
 
     @PrePersist
     private void init(){
