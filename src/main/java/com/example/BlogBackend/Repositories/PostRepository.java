@@ -1,7 +1,11 @@
 package com.example.BlogBackend.Repositories;
 
-import com.example.BlogBackend.Models.Post.PostDto;
+import com.example.BlogBackend.Models.Post.PostFullDto;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface PostRepository extends JpaRepository<PostDto, Long> {
+import java.util.UUID;
+
+@Repository
+public interface PostRepository extends JpaRepository<PostFullDto, UUID> {
 }

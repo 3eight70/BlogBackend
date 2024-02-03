@@ -62,12 +62,21 @@ public class PostFullDto {
     private int commentsCount = 0;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "tag_id")
+    @JoinTable(
+            name = "post_tag",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
     private List<TagDto> tags = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "comment_id")
+    @JoinTable(
+            name = "post_comment",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "comment_id")
+    )
     private List<CommentDto> comments = new ArrayList<>();
+
 
     @PrePersist
     private void init(){

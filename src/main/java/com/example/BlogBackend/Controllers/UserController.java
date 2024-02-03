@@ -1,40 +1,75 @@
 package com.example.BlogBackend.Controllers;
 
+import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
+import com.example.BlogBackend.Models.User.JwtResponse;
 import com.example.BlogBackend.Models.User.LoginCredentials;
 import com.example.BlogBackend.Models.User.UserDto;
+import com.example.BlogBackend.Models.User.UserRegisterModel;
+import com.example.BlogBackend.Services.UserService;
+import com.example.BlogBackend.utils.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RequestMapping("/account")
 public class UserController  extends BaseController{
-    private final IUserService userService;
+    private final UserService userService;
+    private final JwtTokenUtils jwtTokenUtils;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
-    public void register(UserDto user){
+    public ResponseEntity<?> registerNewUser(@RequestBody UserRegisterModel userRegisterModel){
+        if (userService.loadUserByUsername(userRegisterModel.getEmail()) != null){
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Пользователь с указанной почтой уже существует"), HttpStatus.BAD_REQUEST);
+        }
 
+        userRegisterModel.setPassword(passwordEncoder.encode(userRegisterModel.getPassword()));
+
+        try{
+            return userService.registerUser(userRegisterModel);
+        }
+        catch (BadCredentialsException e){
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Данные введены некорректно"), HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PostMapping("/login")
-    public void login(LoginCredentials data){
+    public ResponseEntity<?> login(@RequestBody LoginCredentials authRequest){
+        try {
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
+        } catch (BadCredentialsException e) {
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.UNAUTHORIZED.value(), "Неправильный логин или пароль"), HttpStatus.UNAUTHORIZED);
+        }
 
+        UserDto user = userService.loadUserByUsername(authRequest.getEmail());
+        String token = jwtTokenUtils.generateToken(user);
+
+    return ResponseEntity.ok(new JwtResponse(token));
     }
 
     @PostMapping("/logout")
-    public void logout(){
-
+    public ResponseEntity<Void> logout(){
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/profile")
-    public void getProfile(){
-
+    public ResponseEntity<Void> getProfile(){
+        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/profile")
-    public void editProfile(){
-
+    public ResponseEntity<Void> editProfile(){
+        return ResponseEntity.ok().build();
     }
 }

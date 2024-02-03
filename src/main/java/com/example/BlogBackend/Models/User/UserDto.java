@@ -8,9 +8,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.lang.reflect.Array;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
@@ -32,7 +35,7 @@ public class UserDto implements UserDetails {
     @Size(min = 1, message = "Минимальная длина не менее 1 символа")
     private String fullName;
 
-    private Date birthDate;
+    private LocalDateTime birthDate;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -57,8 +60,8 @@ public class UserDto implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+    public Collection<? extends GrantedAuthority> getAuthorities(){
+        return Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"));
     }
 
     @Override
@@ -83,6 +86,6 @@ public class UserDto implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return true;
     }
 }

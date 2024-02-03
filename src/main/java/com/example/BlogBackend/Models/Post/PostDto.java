@@ -59,7 +59,6 @@ public class PostDto {
     private int commentsCount = 0;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "tag_id")
     private List<TagDto> tags = new ArrayList<>();
 
     @PrePersist
