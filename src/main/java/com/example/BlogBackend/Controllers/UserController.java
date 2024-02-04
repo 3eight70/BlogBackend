@@ -7,12 +7,19 @@ import com.example.BlogBackend.Models.User.UserDto;
 import com.example.BlogBackend.Models.User.UserRegisterModel;
 import com.example.BlogBackend.Services.UserService;
 import com.example.BlogBackend.utils.JwtTokenUtils;
+import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,11 +37,7 @@ public class UserController extends BaseController {
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerNewUser(@RequestBody UserRegisterModel userRegisterModel){
-        if (userService.loadUserByUsername(userRegisterModel.getEmail()) != null){
-            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Пользователь с указанной почтой уже существует"), HttpStatus.BAD_REQUEST);
-        }
-
+    public ResponseEntity<?> registerNewUser(@Valid @RequestBody UserRegisterModel userRegisterModel){
         userRegisterModel.setPassword(passwordEncoder.encode(userRegisterModel.getPassword()));
 
         try{
@@ -65,8 +68,10 @@ public class UserController extends BaseController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<Void> getProfile(){
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> getProfile(HttpServletRequest request){
+        String token = request.getHeader("Authorization").substring(7);
+
+        return ResponseEntity.ok(userService.getUserProfile(token));
     }
 
     @PutMapping("/profile")
