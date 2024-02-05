@@ -1,6 +1,7 @@
 package com.example.BlogBackend.utils;
 
 import com.example.BlogBackend.Models.User.UserDto;
+import com.example.BlogBackend.Repositories.RedisRepository;
 import com.example.BlogBackend.Repositories.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -8,7 +9,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtTokenUtils {
     private final UserRepository userRepository;
+    private final RedisRepository redisRepository;
 
     @Value("${jwt.secret}")
     private String secret;
@@ -35,11 +36,13 @@ public class JwtTokenUtils {
 
         Date issuedDate = new Date();
         Date expiredDate = new Date(issuedDate.getTime() + lifetime.toMillis());
+        UUID tokenId = UUID.randomUUID();
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getEmail())
                 .claim("userId", user.getId().toString())
+                .setId(tokenId.toString())
                 .setIssuedAt(issuedDate)
                 .setExpiration(expiredDate)
                 .signWith(SignatureAlgorithm.HS256, secret)
@@ -55,12 +58,27 @@ public class JwtTokenUtils {
         return getAllClaimsFromToken(token).getSubject();
     }
 
-
+    public void saveToken(String key, String value){
+        redisRepository.save(key, value, lifetime.toMillis());
+    }
 
     private Claims getAllClaimsFromToken(String token){
         return Jwts.parser()
                 .setSigningKey(secret)
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public Boolean validateToken(String token){
+        try {
+            if (redisRepository.checkToken(token)){
+                return true;
+            }
+        }
+        catch (Exception e){
+            return false;
+        }
+
+        return false;
     }
 }

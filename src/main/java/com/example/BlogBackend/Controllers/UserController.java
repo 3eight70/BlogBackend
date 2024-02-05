@@ -1,10 +1,7 @@
 package com.example.BlogBackend.Controllers;
 
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
-import com.example.BlogBackend.Models.User.JwtResponse;
-import com.example.BlogBackend.Models.User.LoginCredentials;
-import com.example.BlogBackend.Models.User.UserDto;
-import com.example.BlogBackend.Models.User.UserRegisterModel;
+import com.example.BlogBackend.Models.User.*;
 import com.example.BlogBackend.Services.UserService;
 import com.example.BlogBackend.utils.JwtTokenUtils;
 import io.jsonwebtoken.JwtException;
@@ -32,7 +29,6 @@ import java.util.UUID;
 @RequestMapping("/api/account")
 public class UserController extends BaseController {
     private final UserService userService;
-    private final JwtTokenUtils jwtTokenUtils;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
@@ -56,15 +52,18 @@ public class UserController extends BaseController {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Неправильный логин или пароль"), HttpStatus.BAD_REQUEST);
         }
 
-        UserDto user = userService.loadUserByUsername(authRequest.getEmail());
-        String token = jwtTokenUtils.generateToken(user);
-
-    return ResponseEntity.ok(new JwtResponse(token));
+        return userService.loginUser(authRequest);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(){
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> logout(HttpServletRequest request){
+        String token = request.getHeader("Authorization").substring(7);
+
+        try{
+            return userService.logoutUser(token);
+        } catch (Exception e){
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/profile")
@@ -75,7 +74,14 @@ public class UserController extends BaseController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<Void> editProfile(){
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> editProfile(@Valid @RequestBody UserEditProfileDto userEditProfileDto, HttpServletRequest request){
+        String token =request.getHeader("Authorization").substring(7);
+
+        try{
+            return userService.editUserProfile(userEditProfileDto, token);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

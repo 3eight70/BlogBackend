@@ -58,12 +58,7 @@ public class PostDto {
     @Column(nullable = false)
     private int commentsCount = 0;
 
-    @ManyToMany(cascade = CascadeType.ALL)
     private List<TagDto> tags = new ArrayList<>();
 
-    @PrePersist
-    private void init(){
-        createTime = LocalDateTime.now();
-    }
 
 }
