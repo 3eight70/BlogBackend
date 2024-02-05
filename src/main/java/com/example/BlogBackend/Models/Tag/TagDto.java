@@ -1,4 +1,4 @@
-package com.example.BlogBackend.Models;
+package com.example.BlogBackend.Models.Tag;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,9 +24,4 @@ public class TagDto {
 
     @Column(nullable = false)
     private String name;
-
-    @PrePersist
-    private void init(){
-        createTime = LocalDateTime.now();
-    }
 }

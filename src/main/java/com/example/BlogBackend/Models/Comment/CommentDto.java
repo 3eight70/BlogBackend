@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Data
 @Entity
-@Table(name="tags")
+@Table(name="comments")
 @AllArgsConstructor
 @NoArgsConstructor
 public class CommentDto {

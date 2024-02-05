@@ -1,6 +1,6 @@
 package com.example.BlogBackend.Models.Post;
 
-import com.example.BlogBackend.Models.TagDto;
+import com.example.BlogBackend.Models.Tag.TagDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
