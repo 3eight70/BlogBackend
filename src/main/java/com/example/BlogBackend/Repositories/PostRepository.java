@@ -8,4 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface PostRepository extends JpaRepository<PostFullDto, UUID> {
+    PostFullDto findPostFullDtoById(UUID postId);
 }

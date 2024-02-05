@@ -32,6 +32,8 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests.requestMatchers("/api/account/profile").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/tag").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/post").authenticated()
+                        .requestMatchers("/api/*/like").authenticated()
                         .requestMatchers("/api/account/logout").authenticated()
                         .anyRequest().permitAll())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))

@@ -4,6 +4,7 @@ import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.User.*;
 import com.example.BlogBackend.Services.UserService;
 import com.example.BlogBackend.utils.JwtTokenUtils;
+import com.example.BlogBackend.utils.TokenUtils;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -57,7 +58,7 @@ public class UserController extends BaseController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request){
-        String token = request.getHeader("Authorization").substring(7);
+        String token = TokenUtils.getToken(request);
 
         try{
             return userService.logoutUser(token);
@@ -68,14 +69,14 @@ public class UserController extends BaseController {
 
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(HttpServletRequest request){
-        String token = request.getHeader("Authorization").substring(7);
+        String token = TokenUtils.getToken(request);
 
         return ResponseEntity.ok(userService.getUserProfile(token));
     }
 
     @PutMapping("/profile")
     public ResponseEntity<?> editProfile(@Valid @RequestBody UserEditProfileDto userEditProfileDto, HttpServletRequest request){
-        String token =request.getHeader("Authorization").substring(7);
+        String token = TokenUtils.getToken(request);
 
         try{
             return userService.editUserProfile(userEditProfileDto, token);

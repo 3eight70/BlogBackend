@@ -2,6 +2,7 @@ package com.example.BlogBackend.Models.Post;
 
 import com.example.BlogBackend.Models.Comment.CommentDto;
 import com.example.BlogBackend.Models.Tag.TagDto;
+import com.example.BlogBackend.Models.User.UserDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -56,7 +57,7 @@ public class PostFullDto {
     private int likes = 0;
 
     @Column(nullable = false)
-    private boolean hasLike;
+    private boolean hasLike = false;
 
     @Column(nullable = false)
     private int commentsCount = 0;
@@ -76,6 +77,14 @@ public class PostFullDto {
             inverseJoinColumns = @JoinColumn(name = "comment_id")
     )
     private List<CommentDto> comments = new ArrayList<>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "post_likes",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private List<UserDto> likesByUsers = new ArrayList<>();
 
 
     @PrePersist

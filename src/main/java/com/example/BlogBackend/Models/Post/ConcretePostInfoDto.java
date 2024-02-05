@@ -1,9 +1,7 @@
 package com.example.BlogBackend.Models.Post;
 
+import com.example.BlogBackend.Models.Comment.CommentDto;
 import com.example.BlogBackend.Models.Tag.TagDto;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,30 +14,21 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostDto {
+public class ConcretePostInfoDto {
     private UUID id;
 
-    @NotNull
     private LocalDateTime createTime;
 
-    @NotNull
-    @Size(min = 1, message = "Минимальная длина не менее 1 символа")
     private String title;
 
-    @NotNull
-    @Size(min = 1, message = "Минимальная длина не менее 1 символа")
     private String description;
 
-    @NotNull
     private int readingTime;
 
     private String image;
 
-    @NotNull
     private UUID authorId;
 
-    @NotNull
-    @Size(min = 1, message = "Минимальная длина не менее 1 символа")
     private String author;
 
     private UUID communityId;
@@ -48,16 +37,14 @@ public class PostDto {
 
     private UUID addressId;
 
-    @NotNull
     private int likes = 0;
 
-    @NotNull
-    private boolean hasLike;
+    private boolean hasLike = false;
 
-    @NotNull
     private int commentsCount = 0;
 
     private List<TagDto> tags = new ArrayList<>();
 
+    private List<CommentDto> comments = new ArrayList<>();
 
 }
