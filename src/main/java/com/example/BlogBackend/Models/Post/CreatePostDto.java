@@ -17,11 +17,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreatePostDto {
-    @Size(min = 5, max=1000)
+    @Size(min = 5, max=1000, message = "Название должно быть не менее 5 символов")
     @NotNull
     private String title;
 
-    @Size(min = 5, max=5000)
+    @Size(min = 5, max=5000, message = "Описание должно быть не менее 5 символов")
     @NotNull
     private String description;
 

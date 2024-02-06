@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Formula;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class PostFullDto {
     private UUID addressId;
 
     @Column(nullable = false)
-    private int likes = 0;
+    private int likes;
 
     @Column(nullable = false)
     private boolean hasLike = false;
@@ -92,4 +93,7 @@ public class PostFullDto {
         createTime = LocalDateTime.now();
     }
 
+    public void updateLikes() {
+        this.likes = this.likesByUsers.size();
+    }
 }
