@@ -39,8 +39,8 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public ResponseEntity<?> editUserProfile(UserEditProfileDto userEditProfileDto, String token){
-        UserDto user = jwtTokenUtils.getUserFromToken(token);
+    public ResponseEntity<?> editUserProfile(UserEditProfileDto userEditProfileDto, String email){
+        UserDto user = loadUserByUsername(email);
 
         user.setEmail(userEditProfileDto.getEmail());
         user.setGender(userEditProfileDto.getGender());
@@ -53,12 +53,18 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().build();
     }
 
-    public UserProfileDto getUserProfile(String token) {
-        return UserMapper.userDtoToUserProfile(jwtTokenUtils.getUserFromToken(token));
+    public UserProfileDto getUserProfile(String email) {
+        return UserMapper.userDtoToUserProfile(loadUserByUsername(email));
     }
 
     public ResponseEntity<?> logoutUser(String token){
-        redisRepository.delete(token);
+        String tokenId = "";
+
+        if (token != null){
+            token = token.substring(7);
+            tokenId = jwtTokenUtils.getIdFromToken(token);
+        }
+        redisRepository.delete(tokenId);
 
         return ResponseEntity.ok().build();
     }
@@ -66,7 +72,8 @@ public class UserService implements UserDetailsService {
     public ResponseEntity<?> loginUser(LoginCredentials authRequest){
         UserDto user = loadUserByUsername(authRequest.getEmail());
         String token = jwtTokenUtils.generateToken(user);
-        jwtTokenUtils.saveToken(token, validToken);
+
+        jwtTokenUtils.saveToken(jwtTokenUtils.getIdFromToken(token), validToken);
 
         return ResponseEntity.ok(new JwtResponse(token));
     }
@@ -93,7 +100,7 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
         String token = jwtTokenUtils.generateToken(user);
 
-        jwtTokenUtils.saveToken(token, validToken);
+        jwtTokenUtils.saveToken(jwtTokenUtils.getIdFromToken(token), validToken);
         return ResponseEntity.ok(token);
     }
 }

@@ -36,7 +36,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
 
-            if (redisRepository.checkToken(jwt)){
+            if (redisRepository.checkToken(jwtTokenUtils.getIdFromToken(jwt))){
                 tokenInRedis = true;
             }
 

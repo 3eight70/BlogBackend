@@ -69,16 +69,7 @@ public class JwtTokenUtils {
                 .getBody();
     }
 
-    public Boolean validateToken(String token){
-        try {
-            if (redisRepository.checkToken(token)){
-                return true;
-            }
-        }
-        catch (Exception e){
-            return false;
-        }
-
-        return false;
+    public String getIdFromToken(String token){
+        return getAllClaimsFromToken(token).getId();
     }
 }

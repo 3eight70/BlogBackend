@@ -9,12 +9,10 @@ import com.example.BlogBackend.Models.Tag.TagDto;
 import com.example.BlogBackend.Models.User.UserDto;
 import com.example.BlogBackend.Repositories.PostRepository;
 import com.example.BlogBackend.Repositories.TagRepository;
-import com.example.BlogBackend.utils.JwtTokenUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -27,12 +25,12 @@ import java.util.UUID;
 @Slf4j
 public class PostService{
     private final PostRepository postRepository;
-    private final JwtTokenUtils jwtTokenUtils;
     private final TagRepository tagRepository;
+    private final UserService userService;
 
     @Transactional
-    public ResponseEntity<?> createPost(CreatePostDto createPostDto, String token){
-        UserDto user = jwtTokenUtils.getUserFromToken(token);
+    public ResponseEntity<?> createPost(CreatePostDto createPostDto, String email){
+        UserDto user = userService.loadUserByUsername(email);
         PostFullDto post = new PostFullDto();
         List<TagDto> tags = tagRepository.findAllById(createPostDto.getTags());
 
@@ -54,8 +52,8 @@ public class PostService{
     }
 
     @Transactional
-    public ResponseEntity<?> getPosts(String token){
-        UserDto user = jwtTokenUtils.getUserFromToken(token);
+    public ResponseEntity<?> getPosts(String email){
+        UserDto user = userService.loadUserByUsername(email);
         List<PostDto> posts = getPostsByUser(user);
         return ResponseEntity.ok(posts);
     }
@@ -92,34 +90,45 @@ public class PostService{
 
 
     @Transactional
-    public ResponseEntity<?> addLikeToPost(String token, UUID postId){
+    public ResponseEntity<?> addLikeToPost(String email, UUID postId){
         PostFullDto post = postRepository.findPostFullDtoById(postId);
         if (post == null){
             throw new EntityNotFoundException();
         }
 
-        UserDto user = jwtTokenUtils.getUserFromToken(token);
+
+        UserDto user = userService.loadUserByUsername(email);
+        if (post.getLikesByUsers().contains(user)){
+            throw new IllegalStateException();
+        }
+
+        post.setLikes(post.getLikes() + 1);
 
         post.getLikesByUsers().add(user);
         return ResponseEntity.ok().build();
     }
 
     @Transactional
-    public ResponseEntity<?> deleteLikeFromPost(String token, UUID postId){
+    public ResponseEntity<?> deleteLikeFromPost(String email, UUID postId){
         PostFullDto post = postRepository.findPostFullDtoById(postId);
         if (post == null){
             throw new EntityNotFoundException();
         }
 
-        UserDto user = jwtTokenUtils.getUserFromToken(token);
+        UserDto user = userService.loadUserByUsername(email);
+        if (!post.getLikesByUsers().contains(user)){
+            throw new IllegalStateException();
+        }
+
+        post.setLikes(post.getLikes() - 1);
 
         post.getLikesByUsers().remove(user);
         return ResponseEntity.ok().build();
     }
 
     @Transactional
-    public ResponseEntity<?> getInfoAboutConcretePostForAuthorized(String token, UUID postId){
-        UserDto user = jwtTokenUtils.getUserFromToken(token);
+    public ResponseEntity<?> getInfoAboutConcretePostForAuthorized(String email, UUID postId){
+        UserDto user = userService.loadUserByUsername(email);
         return ResponseEntity.ok(getInfoAboutPost(user, postId));
     }
 

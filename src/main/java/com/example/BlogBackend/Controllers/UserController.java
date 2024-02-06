@@ -3,11 +3,6 @@ package com.example.BlogBackend.Controllers;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.User.*;
 import com.example.BlogBackend.Services.UserService;
-import com.example.BlogBackend.utils.JwtTokenUtils;
-import com.example.BlogBackend.utils.TokenUtils;
-import io.jsonwebtoken.JwtException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,15 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.UUID;
+import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
@@ -57,9 +47,7 @@ public class UserController extends BaseController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request){
-        String token = TokenUtils.getToken(request);
-
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String token){
         try{
             return userService.logoutUser(token);
         } catch (Exception e){
@@ -68,18 +56,14 @@ public class UserController extends BaseController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(HttpServletRequest request){
-        String token = TokenUtils.getToken(request);
-
-        return ResponseEntity.ok(userService.getUserProfile(token));
+    public ResponseEntity<?> getProfile(Principal principal){
+        return ResponseEntity.ok(userService.getUserProfile(principal.getName()));
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> editProfile(@Valid @RequestBody UserEditProfileDto userEditProfileDto, HttpServletRequest request){
-        String token = TokenUtils.getToken(request);
-
+    public ResponseEntity<?> editProfile(@Valid @RequestBody UserEditProfileDto userEditProfileDto, Principal principal){
         try{
-            return userService.editUserProfile(userEditProfileDto, token);
+            return userService.editUserProfile(userEditProfileDto, principal.getName());
         }
         catch (Exception e){
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
