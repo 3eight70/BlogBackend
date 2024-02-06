@@ -1,5 +1,6 @@
 package com.example.BlogBackend.configurations;
 
+import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Repositories.RedisRepository;
 import com.example.BlogBackend.Services.UserService;
 import com.example.BlogBackend.utils.JwtTokenUtils;
@@ -11,10 +12,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.example.BlogBackend.Models.User.*;
 
 import java.io.IOException;
 
@@ -33,27 +38,30 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwt = null;
         boolean tokenInRedis = false;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                jwt = authHeader.substring(7);
 
-            if (redisRepository.checkToken(jwtTokenUtils.getIdFromToken(jwt))){
-                tokenInRedis = true;
-            }
-
-            try {
+                if (redisRepository.checkToken(jwtTokenUtils.getIdFromToken(jwt))) {
+                    tokenInRedis = true;
+                }
                 email = jwtTokenUtils.getUserEmail(jwt);
-            } catch (ExpiredJwtException e) {
-                log.debug("Время жизни токена истекло");
-            } catch (SignatureException e) {
-                log.debug("Неверная подпись");
             }
         }
+        catch (ExpiredJwtException e){
+            log.debug("Токен просрочен");
+        }
+        catch (SignatureException e) {
+            log.debug("Неверная подпись");
+        }
+
+        User user = userService.loadUserByUsername(email);
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null && tokenInRedis) {
             UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                    email,
+                    user,
                     null,
-                    userService.loadUserByUsername(email).getAuthorities()
+                    user.getAuthorities()
             );
             SecurityContextHolder.getContext().setAuthentication(token);
         }

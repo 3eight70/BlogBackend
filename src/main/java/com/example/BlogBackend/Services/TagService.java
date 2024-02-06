@@ -1,7 +1,7 @@
 package com.example.BlogBackend.Services;
 
 import com.example.BlogBackend.Models.Tag.CreateTagDto;
-import com.example.BlogBackend.Models.Tag.TagDto;
+import com.example.BlogBackend.Models.Tag.Tag;
 import com.example.BlogBackend.Repositories.TagRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,12 +16,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TagService {
     private final TagRepository tagRepository;
-    public List<TagDto> getTagList(){
+    public List<Tag> getTagList(){
         return tagRepository.findAll();
     }
 
-    public TagDto createTag(CreateTagDto createTagDto){
-        TagDto tag = new TagDto(UUID.randomUUID(), LocalDateTime.now(), createTagDto.getName());
+    public Tag createTag(CreateTagDto createTagDto){
+        Tag tag = new Tag(UUID.randomUUID(), LocalDateTime.now(), createTagDto.getName());
         tagRepository.save(tag);
 
         return tag;

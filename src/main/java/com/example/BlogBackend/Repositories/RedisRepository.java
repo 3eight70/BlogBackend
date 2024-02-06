@@ -13,7 +13,7 @@ public class RedisRepository{
 
     public void save(String key, String value, long lifetime){
         redisTemplate.opsForValue().set(key, value);
-        redisTemplate.expire(key, lifetime, TimeUnit.MILLISECONDS);
+        redisTemplate.expire(key    , lifetime, TimeUnit.MILLISECONDS);
     }
 
     public Boolean checkToken(String key){

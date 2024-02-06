@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,14 +57,14 @@ public class UserController extends BaseController {
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(Principal principal){
-        return ResponseEntity.ok(userService.getUserProfile(principal.getName()));
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal User user){
+        return ResponseEntity.ok(userService.getUserProfile(user));
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> editProfile(@Valid @RequestBody UserEditProfileDto userEditProfileDto, Principal principal){
+    public ResponseEntity<?> editProfile(@Valid @RequestBody UserEditProfileDto userEditProfileDto, @AuthenticationPrincipal User user){
         try{
-            return userService.editUserProfile(userEditProfileDto, principal.getName());
+            return userService.editUserProfile(userEditProfileDto, user);
         }
         catch (Exception e){
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);

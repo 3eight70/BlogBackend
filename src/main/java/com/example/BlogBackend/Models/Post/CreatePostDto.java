@@ -1,7 +1,5 @@
 package com.example.BlogBackend.Models.Post;
 
-import com.example.BlogBackend.Models.Tag.TagDto;
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

@@ -1,24 +1,23 @@
 package com.example.BlogBackend.Services;
 
+import com.example.BlogBackend.Models.Post.FullPost;
 import com.example.BlogBackend.Mappers.PostMapper;
 import com.example.BlogBackend.Models.Post.*;
-import com.example.BlogBackend.Models.Tag.TagDto;
-import com.example.BlogBackend.Models.User.UserDto;
+import com.example.BlogBackend.Models.Tag.Tag;
+import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Repositories.PostRepository;
 import com.example.BlogBackend.Repositories.TagRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,13 +27,11 @@ import java.util.UUID;
 public class PostService {
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
-    private final UserService userService;
 
     @Transactional
-    public ResponseEntity<?> createPost(CreatePostDto createPostDto, String email) {
-        UserDto user = userService.loadUserByUsername(email);
-        PostFullDto post = new PostFullDto();
-        List<TagDto> tags = tagRepository.findAllById(createPostDto.getTags());
+    public ResponseEntity<?> createPost(CreatePostDto createPostDto, User user) {
+        FullPost post = new FullPost();
+        List<Tag> tags = tagRepository.findAllById(createPostDto.getTags());
 
         if (tags.size() != createPostDto.getTags().size()) {
             throw new EntityNotFoundException();
@@ -54,10 +51,9 @@ public class PostService {
     }
 
     @Transactional
-    public ResponseEntity<?> getPosts(String email, List<UUID> tags, String authorName, PostSorting sortOrder,
+    public ResponseEntity<?> getPosts(User user, List<UUID> tags, String authorName, PostSorting sortOrder,
                                       Integer minReadingTime, Integer maxReadingTime, Boolean onlyMyCommunities,
                                       Integer page, Integer size) {
-        UserDto user = userService.loadUserByUsername(email);
 
         List<PostDto> posts = getPostsByUser(user, tags, authorName, sortOrder, minReadingTime,
                 maxReadingTime, onlyMyCommunities, page, size);
@@ -75,9 +71,9 @@ public class PostService {
         return ResponseEntity.ok(posts);
     }
 
-    private List<PostDto> getPostsByUser(UserDto user, List<UUID> tags, String authorName, PostSorting sortOrder,
+    private List<PostDto> getPostsByUser(User user, List<UUID> tags, String authorName, PostSorting sortOrder,
                                          Integer minReadingTime, Integer maxReadingTime, Boolean onlyMyCommunities, Integer page, Integer size) {
-        List<PostFullDto> fullPosts;
+        List<FullPost> fullPosts;
         if (page <= 0 || size < 0){
             throw new IllegalArgumentException();
         }
@@ -96,10 +92,10 @@ public class PostService {
         return checkLikes(fullPosts, user);
     }
 
-    private List<PostDto> checkLikes(List<PostFullDto> fullPosts, UserDto user) {
+    private List<PostDto> checkLikes(List<FullPost> fullPosts, User user) {
         List<PostDto> posts = new ArrayList<>();
 
-        for (PostFullDto post : fullPosts) {
+        for (FullPost post : fullPosts) {
             setLike(user, post);
             posts.add(PostMapper.postFullDtoToPostDto(post));
         }
@@ -107,7 +103,7 @@ public class PostService {
         return posts;
     }
 
-    private void setLike(UserDto user, PostFullDto post) {
+    private void setLike(User user, FullPost post) {
         post.setHasLike(false);
 
         if (user != null && post.getLikesByUsers().contains(user)) {
@@ -117,14 +113,12 @@ public class PostService {
 
 
     @Transactional
-    public ResponseEntity<?> addLikeToPost(String email, UUID postId) {
-        PostFullDto post = postRepository.findPostFullDtoById(postId);
+    public ResponseEntity<?> addLikeToPost(User user, UUID postId) {
+        FullPost post = postRepository.findPostFullDtoById(postId);
         if (post == null) {
             throw new EntityNotFoundException();
         }
 
-
-        UserDto user = userService.loadUserByUsername(email);
         if (post.getLikesByUsers().contains(user)) {
             throw new IllegalStateException();
         }
@@ -132,17 +126,18 @@ public class PostService {
         post.getLikesByUsers().add(user);
         post.updateLikes();
 
+        postRepository.save(post);
+
         return ResponseEntity.ok().build();
     }
 
     @Transactional
-    public ResponseEntity<?> deleteLikeFromPost(String email, UUID postId) {
-        PostFullDto post = postRepository.findPostFullDtoById(postId);
+    public ResponseEntity<?> deleteLikeFromPost(User user, UUID postId) {
+        FullPost post = postRepository.findPostFullDtoById(postId);
         if (post == null) {
             throw new EntityNotFoundException();
         }
 
-        UserDto user = userService.loadUserByUsername(email);
         if (!post.getLikesByUsers().contains(user)) {
             throw new IllegalStateException();
         }
@@ -150,12 +145,13 @@ public class PostService {
         post.getLikesByUsers().remove(user);
         post.updateLikes();
 
+        postRepository.save(post);
+
         return ResponseEntity.ok().build();
     }
 
     @Transactional
-    public ResponseEntity<?> getInfoAboutConcretePostForAuthorized(String email, UUID postId) {
-        UserDto user = userService.loadUserByUsername(email);
+    public ResponseEntity<?> getInfoAboutConcretePostForAuthorized(User user, UUID postId) {
         return ResponseEntity.ok(getInfoAboutPost(user, postId));
     }
 
@@ -164,8 +160,8 @@ public class PostService {
         return ResponseEntity.ok(getInfoAboutPost(null, postId));
     }
 
-    public ConcretePostInfoDto getInfoAboutPost(UserDto user, UUID postId) {
-        PostFullDto post = postRepository.findPostFullDtoById(postId);
+    public ConcretePostInfoDto getInfoAboutPost(User user, UUID postId) {
+        FullPost post = postRepository.findPostFullDtoById(postId);
 
         if (post == null) {
             throw new EntityNotFoundException();
@@ -175,7 +171,7 @@ public class PostService {
         return PostMapper.postFullDtoToConcretePostDto(post);
     }
 
-    private void sortPosts(List<PostFullDto> posts, PostSorting sortOrder){
+    private void sortPosts(List<FullPost> posts, PostSorting sortOrder){
 
         switch (sortOrder) {
             case CreateDesc:
@@ -193,20 +189,20 @@ public class PostService {
         }
     }
 
-    private int likeComparatorASC(PostFullDto firstPost, PostFullDto secondPost) {
+    private int likeComparatorASC(FullPost firstPost, FullPost secondPost) {
         return Integer.compare(firstPost.getLikes(), secondPost.getLikes());
     }
 
-    private int likeComparatorDESC(PostFullDto firstPost, PostFullDto secondPost){
+    private int likeComparatorDESC(FullPost firstPost, FullPost secondPost){
         return Integer.compare(secondPost.getLikes(), firstPost.getLikes());
     }
 
-    private int timeComparatorASC(PostFullDto firstPost, PostFullDto secondPost){
+    private int timeComparatorASC(FullPost firstPost, FullPost secondPost){
         return firstPost.getCreateTime().compareTo(secondPost.getCreateTime());
 
     }
 
-    private int timeComparatorDESC(PostFullDto firstPost, PostFullDto secondPost){
+    private int timeComparatorDESC(FullPost firstPost, FullPost secondPost){
         return secondPost.getCreateTime().compareTo(firstPost.getCreateTime());
     }
 }

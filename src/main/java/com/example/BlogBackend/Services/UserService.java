@@ -11,16 +11,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import javax.security.auth.login.AccountNotFoundException;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,14 +27,12 @@ public class UserService implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDto loadUserByUsername(String email) throws UsernameNotFoundException {
+    public User loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email);
     }
 
     @Transactional
-    public ResponseEntity<?> editUserProfile(UserEditProfileDto userEditProfileDto, String email){
-        UserDto user = loadUserByUsername(email);
-
+    public ResponseEntity<?> editUserProfile(UserEditProfileDto userEditProfileDto, User user){
         user.setEmail(userEditProfileDto.getEmail());
         user.setGender(userEditProfileDto.getGender());
         user.setFullName(userEditProfileDto.getFullName());
@@ -53,8 +44,8 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().build();
     }
 
-    public UserProfileDto getUserProfile(String email) {
-        return UserMapper.userDtoToUserProfile(loadUserByUsername(email));
+    public UserProfileDto getUserProfile(User user) {
+        return UserMapper.userDtoToUserProfile(user);
     }
 
     public ResponseEntity<?> logoutUser(String token){
@@ -70,7 +61,7 @@ public class UserService implements UserDetailsService {
     }
 
     public ResponseEntity<?> loginUser(LoginCredentials authRequest){
-        UserDto user = loadUserByUsername(authRequest.getEmail());
+        User user = userRepository.findByEmail(authRequest.getEmail());
         String token = jwtTokenUtils.generateToken(user);
 
         jwtTokenUtils.saveToken(jwtTokenUtils.getIdFromToken(token), validToken);
@@ -80,14 +71,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public ResponseEntity<?> registerUser(UserRegisterModel userRegisterModel) {
-        UserDto user = new UserDto(UUID.randomUUID(),
-                LocalDateTime.now(),
-                userRegisterModel.getFullName(),
-                userRegisterModel.getBirthDate(),
-                userRegisterModel.getGender(),
-                userRegisterModel.getEmail(),
-                userRegisterModel.getPhoneNumber(),
-                userRegisterModel.getPassword());
+        User user = UserMapper.userRegisterModelToUser(userRegisterModel);
 
         String email = user.getEmail();
         if (userRepository.findByEmail(email) != null) {
@@ -101,6 +85,6 @@ public class UserService implements UserDetailsService {
         String token = jwtTokenUtils.generateToken(user);
 
         jwtTokenUtils.saveToken(jwtTokenUtils.getIdFromToken(token), validToken);
-        return ResponseEntity.ok(token);
+        return ResponseEntity.ok(new JwtResponse(token));
     }
 }

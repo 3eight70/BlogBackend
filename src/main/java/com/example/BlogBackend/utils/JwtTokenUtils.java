@@ -1,13 +1,15 @@
 package com.example.BlogBackend.utils;
 
-import com.example.BlogBackend.Models.User.UserDto;
+import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Repositories.RedisRepository;
 import com.example.BlogBackend.Repositories.UserRepository;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +29,7 @@ public class JwtTokenUtils {
     @Value("${jwt.expiration}")
     private Duration lifetime;
 
-    public String generateToken(UserDto user){
+    public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         List<String> rolesList = user.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority).collect(Collectors.toList());
@@ -49,27 +51,27 @@ public class JwtTokenUtils {
                 .compact();
     }
 
-    public UserDto getUserFromToken(String token){
+    public User getUserFromToken(String token) {
         var userId = getAllClaimsFromToken(token).get("userId", String.class);
         return userRepository.findById(UUID.fromString(userId)).orElseThrow();
     }
 
-    public String getUserEmail(String token){
+    public String getUserEmail(String token) {
         return getAllClaimsFromToken(token).getSubject();
     }
 
-    public void saveToken(String key, String value){
+    public void saveToken(String key, String value) {
         redisRepository.save(key, value, lifetime.toMillis());
     }
 
-    private Claims getAllClaimsFromToken(String token){
+    private Claims getAllClaimsFromToken(String token) {
         return Jwts.parser()
                 .setSigningKey(secret)
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    public String getIdFromToken(String token){
+    public String getIdFromToken(String token) {
         return getAllClaimsFromToken(token).getId();
     }
 }

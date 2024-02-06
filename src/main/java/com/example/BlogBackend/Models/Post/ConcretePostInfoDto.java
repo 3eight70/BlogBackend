@@ -1,7 +1,7 @@
 package com.example.BlogBackend.Models.Post;
 
 import com.example.BlogBackend.Models.Comment.CommentDto;
-import com.example.BlogBackend.Models.Tag.TagDto;
+import com.example.BlogBackend.Models.Tag.Tag;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -43,7 +43,7 @@ public class ConcretePostInfoDto {
 
     private int commentsCount = 0;
 
-    private List<TagDto> tags = new ArrayList<>();
+    private List<Tag> tags = new ArrayList<>();
 
     private List<CommentDto> comments = new ArrayList<>();
 

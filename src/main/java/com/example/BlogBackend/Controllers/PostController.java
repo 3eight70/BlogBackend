@@ -3,14 +3,14 @@ package com.example.BlogBackend.Controllers;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.Post.CreatePostDto;
 import com.example.BlogBackend.Models.Post.PostSorting;
+import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Services.PostService;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -24,9 +24,9 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping("/post")
-    public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostDto createPostDto, Principal principal) {
+    public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostDto createPostDto, @AuthenticationPrincipal User user) {
         try {
-            return postService.createPost(createPostDto, principal.getName());
+            return postService.createPost(createPostDto, user);
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданного тэга не существует"), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
@@ -35,7 +35,7 @@ public class PostController {
     }
 
     @GetMapping("/post")
-    public ResponseEntity<?> getPosts(Principal principal,
+    public ResponseEntity<?> getPosts(@AuthenticationPrincipal User user,
                                       @RequestParam(name = "tags", required = false) List<UUID> tags,
                                       @RequestParam(name = "authorName", required = false) String authorName,
                                       @RequestParam(name = "sortOrder", defaultValue = "CreateAsc") PostSorting sortOrder,
@@ -45,8 +45,8 @@ public class PostController {
                                       @RequestParam(name = "page", defaultValue = "1") Integer page,
                                       @RequestParam(name = "size", defaultValue = "5") Integer pageSize) {
         try {
-            if (principal != null && principal.getName() != null) {
-                return postService.getPosts(principal.getName(), tags, authorName, sortOrder,
+            if (user != null) {
+                return postService.getPosts(user, tags, authorName, sortOrder,
                         minReadingTime, maxReadingTime, onlyMyCommunities, page, pageSize);
             } else {
                 return postService.getPostsForUnauthorizedUser(tags, authorName, sortOrder,
@@ -55,17 +55,15 @@ public class PostController {
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Номер страницы или количество постов указаны неверно"), HttpStatus.BAD_REQUEST);
         }
-        catch (ExpiredJwtException e) {
-            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.UNAUTHORIZED.value(), "Срок действия токена авторизации истек"), HttpStatus.UNAUTHORIZED);
-        } catch (Exception e) {
+         catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @DeleteMapping("/{postId}/like")
-    public ResponseEntity<?> deleteLike(@PathVariable("postId") UUID id, Principal principal) {
+    public ResponseEntity<?> deleteLike(@PathVariable("postId") UUID id, @AuthenticationPrincipal User user) {
         try {
-            return postService.deleteLikeFromPost(principal.getName(), id);
+            return postService.deleteLikeFromPost(user, id);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "У пользователя нет лайка на данном посте"), HttpStatus.BAD_REQUEST);
         } catch (EntityNotFoundException e) {
@@ -76,9 +74,9 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<?> addLike(@PathVariable("postId") UUID id, Principal principal) {
+    public ResponseEntity<?> addLike(@PathVariable("postId") UUID id, @AuthenticationPrincipal User user) {
         try {
-            return postService.addLikeToPost(principal.getName(), id);
+            return postService.addLikeToPost(user, id);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "У пользователя уже есть лайк на данном посте"), HttpStatus.BAD_REQUEST);
         } catch (EntityNotFoundException e) {
@@ -89,10 +87,10 @@ public class PostController {
     }
 
     @GetMapping("/post/{id}")
-    public ResponseEntity<?> getInfoAboutConcretePost(@PathVariable("id") UUID id, Principal principal) {
+    public ResponseEntity<?> getInfoAboutConcretePost(@PathVariable("id") UUID id, @AuthenticationPrincipal User user) {
         try {
-            if (principal != null && principal.getName() != null) {
-                return postService.getInfoAboutConcretePostForAuthorized(principal.getName(), id);
+            if (user != null ) {
+                return postService.getInfoAboutConcretePostForAuthorized(user, id);
             } else {
                 return postService.getInfoAboutConcretePostForUnauthorized(id);
             }

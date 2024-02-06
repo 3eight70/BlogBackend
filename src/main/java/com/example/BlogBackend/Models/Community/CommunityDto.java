@@ -1,27 +1,27 @@
-package com.example.BlogBackend.Models.Tag;
+package com.example.BlogBackend.Models.Community;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 @Data
-@Entity
-@Table(name="tags")
 @AllArgsConstructor
 @NoArgsConstructor
-public class TagDto {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+public class CommunityDto {
     private UUID id;
 
-    @Column(nullable = false)
     private LocalDateTime createTime;
 
-    @Column(nullable = false)
     private String name;
+
+    private String description;
+
+    private Boolean isClosed;
+
+    private int subscribersCount;
+
+    private int administratorsCount;
 }

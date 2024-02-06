@@ -2,10 +2,10 @@ package com.example.BlogBackend.Mappers;
 
 import com.example.BlogBackend.Models.Post.ConcretePostInfoDto;
 import com.example.BlogBackend.Models.Post.PostDto;
-import com.example.BlogBackend.Models.Post.PostFullDto;
+import com.example.BlogBackend.Models.Post.FullPost;
 
 public class PostMapper {
-    public static PostDto postFullDtoToPostDto(PostFullDto postFullDto){
+    public static PostDto postFullDtoToPostDto(FullPost postFullDto){
         return new PostDto(postFullDto.getId(),
                 postFullDto.getCreateTime(),
                 postFullDto.getTitle(),
@@ -23,7 +23,7 @@ public class PostMapper {
                 postFullDto.getTags());
     }
 
-    public static ConcretePostInfoDto postFullDtoToConcretePostDto(PostFullDto postFullDto){
+    public static ConcretePostInfoDto postFullDtoToConcretePostDto(FullPost postFullDto){
         return new ConcretePostInfoDto(postFullDto.getId(),
                 postFullDto.getCreateTime(),
                 postFullDto.getTitle(),

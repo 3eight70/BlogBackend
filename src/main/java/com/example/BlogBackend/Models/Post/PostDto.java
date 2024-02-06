@@ -1,7 +1,6 @@
 package com.example.BlogBackend.Models.Post;
 
-import com.example.BlogBackend.Models.Tag.TagDto;
-import jakarta.persistence.*;
+import com.example.BlogBackend.Models.Tag.Tag;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -57,7 +56,7 @@ public class PostDto {
     @NotNull
     private int commentsCount = 0;
 
-    private List<TagDto> tags = new ArrayList<>();
+    private List<Tag> tags = new ArrayList<>();
 
 
 }

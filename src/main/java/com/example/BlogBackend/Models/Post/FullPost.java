@@ -1,14 +1,13 @@
 package com.example.BlogBackend.Models.Post;
 
 import com.example.BlogBackend.Models.Comment.CommentDto;
-import com.example.BlogBackend.Models.Tag.TagDto;
-import com.example.BlogBackend.Models.User.UserDto;
+import com.example.BlogBackend.Models.Tag.Tag;
+import com.example.BlogBackend.Models.User.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Formula;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -20,7 +19,7 @@ import java.util.UUID;
 @Table(name="posts")
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostFullDto {
+public class FullPost {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -69,7 +68,7 @@ public class PostFullDto {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
-    private List<TagDto> tags = new ArrayList<>();
+    private List<Tag> tags = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
@@ -85,7 +84,7 @@ public class PostFullDto {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<UserDto> likesByUsers = new ArrayList<>();
+    private List<User> likesByUsers = new ArrayList<>();
 
 
     @PrePersist
