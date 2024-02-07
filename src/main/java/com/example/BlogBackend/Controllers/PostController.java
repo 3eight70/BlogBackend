@@ -26,7 +26,7 @@ public class PostController {
     @PostMapping("/post")
     public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostDto createPostDto, @AuthenticationPrincipal User user) {
         try {
-            return postService.createPost(createPostDto, user);
+            return postService.createPost(createPostDto, user, null);
         } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданного тэга не существует"), HttpStatus.NOT_FOUND);
         } catch (Exception e) {

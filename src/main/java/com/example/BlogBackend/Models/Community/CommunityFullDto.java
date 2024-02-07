@@ -1,6 +1,7 @@
 package com.example.BlogBackend.Models.Community;
 
 import com.example.BlogBackend.Models.User.User;
+import com.example.BlogBackend.Models.User.UserDto;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -35,8 +36,8 @@ public class CommunityFullDto {
     private int subscribersCount = 0;
 
     @NotNull
-    private int administratorsCount;
+    private int administratorsCount = 0;
 
     @NotNull
-    private List<User> administrators = new ArrayList<>();
+    private List<UserDto> administrators = new ArrayList<>();
 }

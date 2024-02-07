@@ -36,8 +36,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/*/like").authenticated()
                         .requestMatchers("/api/account/logout").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/community").authenticated()
-                        .requestMatchers("/community/{id}/subscribe").authenticated()
-                        .requestMatchers("/community/{id}/unsubscribe").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/community/*/subscribe").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/community/*/unsubscribe").authenticated()
+                        .requestMatchers("/api/community/my").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/community/*/post").authenticated()
                         .anyRequest().permitAll())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->

@@ -1,5 +1,6 @@
 package com.example.BlogBackend.Services;
 
+import com.example.BlogBackend.Models.Community.Community;
 import com.example.BlogBackend.Models.Post.FullPost;
 import com.example.BlogBackend.Mappers.PostMapper;
 import com.example.BlogBackend.Models.Post.*;
@@ -17,7 +18,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -30,7 +30,7 @@ public class PostService {
     private final TagRepository tagRepository;
 
     @Transactional
-    public ResponseEntity<?> createPost(CreatePostDto createPostDto, User user) {
+    public ResponseEntity<?> createPost(CreatePostDto createPostDto, User user, Community community) {
         FullPost post = new FullPost();
         List<Tag> tags = tagRepository.findAllById(createPostDto.getTags());
 
@@ -46,6 +46,10 @@ public class PostService {
         post.setReadingTime(createPostDto.getReadingTime());
         post.setImage(createPostDto.getImage());
         post.setTags(tags);
+        if (community != null){
+            post.setCommunityId(community.getId());
+            post.setCommunityName(community.getName());
+        }
         postRepository.save(post);
 
         return ResponseEntity.ok().build();
@@ -82,16 +86,26 @@ public class PostService {
         Pageable pageElements = PageRequest.of(page-1, size, getSorting(sortOrder));
 
         if (tags != null && !tags.isEmpty()){
-            fullPosts = postRepository.findPostsByParametersWithTags(authorName, minReadingTime, maxReadingTime, tags, pageElements);
+            if (user != null) {
+                fullPosts = postRepository.findPostsByParametersWithTagsIfUserNotNull(authorName, minReadingTime, maxReadingTime, tags, user.getId(), pageElements);
+            }
+            else{
+                fullPosts = postRepository.findPostsByParametersWithTagsIfUserNull(authorName, minReadingTime, maxReadingTime, tags, pageElements);
+            }
         }
         else{
-            fullPosts = postRepository.findPostsByParametersWithoutTags(authorName, minReadingTime, maxReadingTime, pageElements);
+            if (user != null) {
+                fullPosts = postRepository.findPostsByParametersWithoutTagsIfUserNotNull(authorName, minReadingTime, maxReadingTime, user.getId(), pageElements);
+            }
+            else{
+                fullPosts = postRepository.findPostsByParametersWithoutTagsIfUserNull(authorName, minReadingTime, maxReadingTime, pageElements);
+            }
         }
 
         return checkLikes(fullPosts, user);
     }
 
-    private List<PostDto> checkLikes(List<FullPost> fullPosts, User user) {
+    public List<PostDto> checkLikes(List<FullPost> fullPosts, User user) {
         List<PostDto> posts = new ArrayList<>();
 
         for (FullPost post : fullPosts) {
@@ -170,7 +184,7 @@ public class PostService {
         return PostMapper.postFullDtoToConcretePostDto(post);
     }
 
-    private Sort getSorting(PostSorting sortOrder){
+    public Sort getSorting(PostSorting sortOrder){
 
         switch (sortOrder) {
             case CreateDesc:
@@ -186,21 +200,4 @@ public class PostService {
         }
     }
 
-
-    private int likeComparatorASC(FullPost firstPost, FullPost secondPost) {
-        return Integer.compare(firstPost.getLikes(), secondPost.getLikes());
-    }
-
-    private int likeComparatorDESC(FullPost firstPost, FullPost secondPost){
-        return Integer.compare(secondPost.getLikes(), firstPost.getLikes());
-    }
-
-    private int timeComparatorASC(FullPost firstPost, FullPost secondPost){
-        return firstPost.getCreateTime().compareTo(secondPost.getCreateTime());
-
-    }
-
-    private int timeComparatorDESC(FullPost firstPost, FullPost secondPost){
-        return secondPost.getCreateTime().compareTo(firstPost.getCreateTime());
-    }
 }
