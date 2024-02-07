@@ -1,5 +1,6 @@
 package com.example.BlogBackend.Mappers;
 
+import com.example.BlogBackend.Models.Author.AuthorDto;
 import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Models.User.UserDto;
 import com.example.BlogBackend.Models.User.UserProfileDto;
@@ -42,4 +43,14 @@ public class UserMapper {
         );
     }
 
+    public static AuthorDto userToAuthorDto(User user, int totalLikes, int totalPosts){
+        return new AuthorDto(
+                user.getFullName(),
+                user.getBirthDate(),
+                user.getGender(),
+                totalPosts,
+                totalLikes,
+                user.getCreateTime()
+                );
+    }
 }

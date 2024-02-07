@@ -1,5 +1,6 @@
 package com.example.BlogBackend.Models.Post;
 
+import com.example.BlogBackend.Models.Comment.Comment;
 import com.example.BlogBackend.Models.Comment.CommentDto;
 import com.example.BlogBackend.Models.Tag.Tag;
 import com.example.BlogBackend.Models.User.User;
@@ -76,7 +77,7 @@ public class FullPost {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "comment_id")
     )
-    private List<CommentDto> comments = new ArrayList<>();
+    private List<Comment> comments = new ArrayList<>();
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(

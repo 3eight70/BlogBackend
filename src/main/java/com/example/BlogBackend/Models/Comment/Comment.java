@@ -1,41 +1,52 @@
 package com.example.BlogBackend.Models.Comment;
 
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
+@Entity
+@Table(name="comments")
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentDto {
+public class Comment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @NotNull
+    @Column(nullable = false)
     private LocalDateTime createTime;
 
+    @Column(nullable = false)
+    private UUID postId;
+
     @Size(min = 1, message = "Минимальная длина не менее 1 символа")
-    @NotNull
+    @Column(nullable = false)
     private String content;
 
     private LocalDateTime modifiedDate;
 
     private LocalDateTime deleteDate;
 
-    @NotNull
+    @Column(nullable = false)
     private UUID authorId;
 
     @Size(min = 1, message = "Минимальная длина не менее 1 символа")
-    @NotNull
+    @Column(nullable = false)
     private String author;
 
-    @NotNull
+    @Column(nullable = false)
     private int subComments;
+
+    private UUID parentId;
+
+    @PrePersist
+    private void init(){
+        createTime = LocalDateTime.now();
+    }
 }

@@ -1,5 +1,8 @@
 package com.example.BlogBackend.Services;
 
+import com.example.BlogBackend.Mappers.CommentMapper;
+import com.example.BlogBackend.Models.Comment.Comment;
+import com.example.BlogBackend.Models.Comment.CommentDto;
 import com.example.BlogBackend.Models.Community.Community;
 import com.example.BlogBackend.Models.Post.FullPost;
 import com.example.BlogBackend.Mappers.PostMapper;
@@ -180,8 +183,13 @@ public class PostService {
             throw new EntityNotFoundException();
         }
 
+        List<CommentDto> comments = new ArrayList<>();
+        for (Comment comment: post.getComments()){
+            comments.add(CommentMapper.commentToCommentDto(comment));
+        }
+
         setLike(user, post);
-        return PostMapper.postFullDtoToConcretePostDto(post);
+        return PostMapper.postFullDtoToConcretePostDto(post, comments);
     }
 
     public Sort getSorting(PostSorting sortOrder){

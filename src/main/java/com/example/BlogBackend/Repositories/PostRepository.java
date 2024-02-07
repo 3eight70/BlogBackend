@@ -15,6 +15,7 @@ import java.util.UUID;
 public interface PostRepository extends JpaRepository<FullPost, UUID> {
     FullPost findPostFullDtoById(UUID postId);
 
+    List<FullPost> findFullPostsByAuthorId(UUID authorId);
 
     @Query(value = "SELECT * FROM posts p " +
             "JOIN post_tag pt ON p.id = pt.post_id " +
@@ -26,7 +27,7 @@ public interface PostRepository extends JpaRepository<FullPost, UUID> {
             "SELECT community_id FROM community_subscribers WHERE subscriber_id = :userId UNION " +
             "SELECT community_id FROM community_administrators WHERE administrator_id = :userId) " +
             "AND EXISTS (SELECT 1 FROM communities WHERE id = p.community_id AND is_closed = true))) " +
-            "AND (:tags IS NULL OR pt.tag_id IN :tags)",
+            "AND (pt.tag_id IN :tags)",
             nativeQuery = true)
     List<FullPost> findPostsByParametersWithTagsIfUserNotNull(
             @Param("authorName") String authorName,

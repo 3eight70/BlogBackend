@@ -34,6 +34,7 @@ public class CommunityService {
     private final PostService postService;
     private final PostRepository postRepository;
 
+    @Transactional
     public ResponseEntity<?> getCommunities(){
         List <Community> communities = communityRepository.findAll();
         List<CommunityDto> communitiesDto = new ArrayList<>();
@@ -44,6 +45,7 @@ public class CommunityService {
         return ResponseEntity.ok(communitiesDto);
     }
 
+    @Transactional
     public ResponseEntity<?> createCommunity(CreateCommunityDto createCommunityDto, User user){
         if (communityRepository.findByName(createCommunityDto.getName()) != null){
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Сообщество с таким названием уже существует"), HttpStatus.BAD_REQUEST);

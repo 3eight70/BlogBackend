@@ -40,6 +40,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/community/*/unsubscribe").authenticated()
                         .requestMatchers("/api/community/my").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/community/*/post").authenticated()
+                        .requestMatchers("/api/post/*/comment").authenticated()
+                        .requestMatchers("/api/comment/*").authenticated()
                         .anyRequest().permitAll())
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .sessionManagement(httpSecuritySessionManagementConfigurer ->
