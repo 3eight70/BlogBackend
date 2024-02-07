@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -78,7 +79,7 @@ public class PostService {
             throw new IllegalArgumentException();
         }
 
-        Pageable pageElements = PageRequest.of(page-1, size);
+        Pageable pageElements = PageRequest.of(page-1, size, getSorting(sortOrder));
 
         if (tags != null && !tags.isEmpty()){
             fullPosts = postRepository.findPostsByParametersWithTags(authorName, minReadingTime, maxReadingTime, tags, pageElements);
@@ -86,8 +87,6 @@ public class PostService {
         else{
             fullPosts = postRepository.findPostsByParametersWithoutTags(authorName, minReadingTime, maxReadingTime, pageElements);
         }
-
-        sortPosts(fullPosts, sortOrder);
 
         return checkLikes(fullPosts, user);
     }
@@ -171,23 +170,22 @@ public class PostService {
         return PostMapper.postFullDtoToConcretePostDto(post);
     }
 
-    private void sortPosts(List<FullPost> posts, PostSorting sortOrder){
+    private Sort getSorting(PostSorting sortOrder){
 
         switch (sortOrder) {
             case CreateDesc:
-                posts.sort(this::timeComparatorDESC);
-                break;
+                return Sort.by(Sort.Direction.DESC, "create_time");
             case CreateAsc:
-                posts.sort(this::timeComparatorASC);
-                break;
+                return Sort.by(Sort.Direction.ASC, "create_time");
             case LikeAsc:
-                posts.sort(this::likeComparatorASC);
-                break;
+                return Sort.by(Sort.Direction.ASC, "likes");
             case LikeDesc:
-                posts.sort(this::likeComparatorDESC);
-                break;
+                return Sort.by(Sort.Direction.DESC, "likes");
+            default:
+                return Sort.by(Sort.Direction.ASC, "create_time");
         }
     }
+
 
     private int likeComparatorASC(FullPost firstPost, FullPost secondPost) {
         return Integer.compare(firstPost.getLikes(), secondPost.getLikes());
