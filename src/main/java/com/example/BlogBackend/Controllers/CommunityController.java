@@ -106,7 +106,7 @@ public class CommunityController {
         }
     }
 
-    @PostMapping("/{id}/role")
+    @GetMapping("/{id}/role")
     public ResponseEntity<?> getUserGreatestRoleInCommunity(@PathVariable UUID id,  @AuthenticationPrincipal User user){
         try {
             return communityService.getUsersGreatestRole(id, user);

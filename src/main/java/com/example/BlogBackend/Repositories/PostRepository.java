@@ -1,5 +1,6 @@
 package com.example.BlogBackend.Repositories;
 
+import com.example.BlogBackend.Models.Comment.Comment;
 import com.example.BlogBackend.Models.Post.FullPost;
 import com.example.BlogBackend.Models.User.User;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,8 @@ public interface PostRepository extends JpaRepository<FullPost, UUID> {
     FullPost findPostFullDtoById(UUID postId);
 
     List<FullPost> findFullPostsByAuthorId(UUID authorId);
+
+    FullPost findByCommentsContains(Comment comment);
 
     @Query(value = "SELECT * FROM posts p " +
             "JOIN post_tag pt ON p.id = pt.post_id " +

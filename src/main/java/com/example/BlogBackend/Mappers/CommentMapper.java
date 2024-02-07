@@ -9,11 +9,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class CommentMapper {
-    public static Comment createCommentDtoToComment(CreateCommentDto createCommentDto, User user, UUID postId){
+    public static Comment createCommentDtoToComment(CreateCommentDto createCommentDto, User user){
         return new Comment(
                 UUID.randomUUID(),
                 LocalDateTime.now(),
-                postId,
                 createCommentDto.getContent(),
                 null,
                 null,

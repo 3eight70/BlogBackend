@@ -38,7 +38,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwt = null;
         boolean tokenInRedis = false;
 
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost");
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Auth-Token");
+
         try {
+            if (authHeader != null && authHeader.equals("Bearer null")){
+                authHeader = null;
+            }
+
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 jwt = authHeader.substring(7);
 
@@ -65,6 +73,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             );
             SecurityContextHolder.getContext().setAuthentication(token);
         }
-        filterChain.doFilter(request, response);
+        if (request.getMethod().equals("OPTIONS")) {
+            response.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            filterChain.doFilter(request, response);
+        }
     }
 }

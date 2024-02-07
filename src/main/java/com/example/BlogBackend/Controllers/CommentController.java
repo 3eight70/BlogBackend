@@ -1,6 +1,7 @@
 package com.example.BlogBackend.Controllers;
 
 import com.example.BlogBackend.Models.Comment.CreateCommentDto;
+import com.example.BlogBackend.Models.Comment.EditCommentDto;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Services.CommentService;
@@ -40,9 +41,9 @@ public class CommentController {
     }
 
     @PutMapping("/comment/{id}")
-    public ResponseEntity<?> editComment(@PathVariable UUID id, @RequestBody String content){
+    public ResponseEntity<?> editComment(@PathVariable UUID id, @RequestBody EditCommentDto editCommentDto){
         try{
-            return commentService.editComment(id, content);
+            return commentService.editComment(id, editCommentDto);
         }
         catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);

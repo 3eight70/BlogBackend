@@ -22,9 +22,6 @@ public class Comment {
     @Column(nullable = false)
     private LocalDateTime createTime;
 
-    @Column(nullable = false)
-    private UUID postId;
-
     @Size(min = 1, message = "Минимальная длина не менее 1 символа")
     @Column(nullable = false)
     private String content;

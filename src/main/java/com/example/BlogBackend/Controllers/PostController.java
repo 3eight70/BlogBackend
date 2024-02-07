@@ -34,7 +34,7 @@ public class PostController {
         }
     }
 
-    @GetMapping("/post")
+    @GetMapping({"/post", "/post/"})
     public ResponseEntity<?> getPosts(@AuthenticationPrincipal User user,
                                       @RequestParam(name = "tags", required = false) List<UUID> tags,
                                       @RequestParam(name = "authorName", required = false) String authorName,
@@ -60,7 +60,7 @@ public class PostController {
         }
     }
 
-    @DeleteMapping("/{postId}/like")
+    @DeleteMapping("/post/{postId}/like")
     public ResponseEntity<?> deleteLike(@PathVariable("postId") UUID id, @AuthenticationPrincipal User user) {
         try {
             return postService.deleteLikeFromPost(user, id);
@@ -73,7 +73,7 @@ public class PostController {
         }
     }
 
-    @PostMapping("/{postId}/like")
+    @PostMapping("/post/{postId}/like")
     public ResponseEntity<?> addLike(@PathVariable("postId") UUID id, @AuthenticationPrincipal User user) {
         try {
             return postService.addLikeToPost(user, id);

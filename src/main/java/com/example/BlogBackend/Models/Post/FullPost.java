@@ -96,4 +96,13 @@ public class FullPost {
     public void updateLikes() {
         this.likes = this.likesByUsers.size();
     }
+
+    public void updateComments() {
+        int commentsAmount = 0;
+        for (Comment comment : comments) {
+            commentsAmount += comment.getSubComments() + 1;
+        }
+
+        this.commentsCount = commentsAmount;
+    }
 }
