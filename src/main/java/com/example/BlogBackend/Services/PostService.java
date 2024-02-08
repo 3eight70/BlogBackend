@@ -46,14 +46,15 @@ public class PostService {
             throw new EntityNotFoundException();
         }
 
+        post.setAddressId(createPostDto.getAddressId());
         post.setAuthor(user.getFullName());
         post.setAuthorId(user.getId());
         post.setTitle(createPostDto.getTitle());
-        post.setAddressId(createPostDto.getAddressId());
         post.setDescription(createPostDto.getDescription());
         post.setReadingTime(createPostDto.getReadingTime());
         post.setImage(createPostDto.getImage());
         post.setTags(tags);
+
         if (community != null){
             post.setCommunityId(community.getId());
             post.setCommunityName(community.getName());
