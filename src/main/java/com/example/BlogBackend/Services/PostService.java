@@ -4,6 +4,7 @@ import com.example.BlogBackend.Mappers.CommentMapper;
 import com.example.BlogBackend.Models.Comment.Comment;
 import com.example.BlogBackend.Models.Comment.CommentDto;
 import com.example.BlogBackend.Models.Community.Community;
+import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.Pagination;
 import com.example.BlogBackend.Models.Post.FullPost;
 import com.example.BlogBackend.Mappers.PostMapper;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -67,7 +69,7 @@ public class PostService {
 
         Map<String, Object> response = new HashMap<>();
         response.put("posts", posts);
-        response.put("pagination", new Pagination(size, page, posts.size()/size));
+        response.put("pagination", new Pagination(size, page, getPagination(posts.size(), size)));
         return ResponseEntity.ok(response);
     }
 
@@ -75,13 +77,27 @@ public class PostService {
     public ResponseEntity<?> getPostsForUnauthorizedUser(List<UUID> tags, String authorName, PostSorting sortOrder,
                                                          Integer minReadingTime, Integer maxReadingTime, Boolean onlyMyCommunities,
                                                          Integer page, Integer size) {
+        if (onlyMyCommunities){
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Пользователь не авторизован"), HttpStatus.BAD_REQUEST);
+        }
+
         List<PostDto> posts = getPostsByUser(null, tags, authorName, sortOrder, minReadingTime,
                 maxReadingTime, onlyMyCommunities, page, size);
 
         Map<String, Object> response = new HashMap<>();
         response.put("posts", posts);
-        response.put("pagination", new Pagination(size, page, posts.size()/size));
+        response.put("pagination", new Pagination(size, page, getPagination(posts.size(), size)));
         return ResponseEntity.ok(response);
+    }
+
+    private int getPagination(int postsSize, int size){
+        int paginationSize = (int)Math.ceil((postsSize)/(double)size);
+
+        if (postsSize % size == 0){
+            paginationSize+=1;
+        }
+
+        return paginationSize;
     }
 
     private List<PostDto> getPostsByUser(User user, List<UUID> tags, String authorName, PostSorting sortOrder,
@@ -95,7 +111,12 @@ public class PostService {
 
         if (tags != null && !tags.isEmpty()){
             if (user != null) {
-                fullPosts = postRepository.findPostsByParametersWithTagsIfUserNotNull(authorName, minReadingTime, maxReadingTime, tags, user.getId(), pageElements);
+                if (!onlyMyCommunities) {
+                    fullPosts = postRepository.findPostsByParametersWithTagsIfUserNotNull(authorName, minReadingTime, maxReadingTime, tags, user.getId(), pageElements);
+                }
+                else{
+                    fullPosts = postRepository.findOnlyCommunitiesPostsWithTags(authorName, minReadingTime, maxReadingTime, tags, user.getId(), pageElements);
+                }
             }
             else{
                 fullPosts = postRepository.findPostsByParametersWithTagsIfUserNull(authorName, minReadingTime, maxReadingTime, tags, pageElements);
@@ -103,7 +124,12 @@ public class PostService {
         }
         else{
             if (user != null) {
-                fullPosts = postRepository.findPostsByParametersWithoutTagsIfUserNotNull(authorName, minReadingTime, maxReadingTime, user.getId(), pageElements);
+                if (!onlyMyCommunities) {
+                    fullPosts = postRepository.findPostsByParametersWithoutTagsIfUserNotNull(authorName, minReadingTime, maxReadingTime, user.getId(), pageElements);
+                }
+                else{
+                    fullPosts = postRepository.findOnlyCommunitiesPostsWithoutTags(authorName, minReadingTime, maxReadingTime, user.getId(), pageElements);
+                }
             }
             else{
                 fullPosts = postRepository.findPostsByParametersWithoutTagsIfUserNull(authorName, minReadingTime, maxReadingTime, pageElements);

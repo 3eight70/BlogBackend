@@ -41,7 +41,7 @@ public class PostController {
                                       @RequestParam(name = "sortOrder", defaultValue = "CreateAsc") PostSorting sortOrder,
                                       @RequestParam(name = "min", required = false) Integer minReadingTime,
                                       @RequestParam(name = "max", required = false) Integer maxReadingTime,
-                                      @RequestParam(name = "onlyMyCommunities", required = false) Boolean onlyMyCommunities,
+                                      @RequestParam(name = "onlyMyCommunities", defaultValue = "false") Boolean onlyMyCommunities,
                                       @RequestParam(name = "page", defaultValue = "1") Integer page,
                                       @RequestParam(name = "size", defaultValue = "5") Integer pageSize) {
         try {

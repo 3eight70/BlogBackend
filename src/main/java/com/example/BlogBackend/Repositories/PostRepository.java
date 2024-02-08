@@ -21,40 +21,75 @@ public interface PostRepository extends JpaRepository<FullPost, UUID> {
     FullPost findByCommentsContains(Comment comment);
 
     @Query(value = "SELECT * FROM posts p " +
-            "JOIN post_tag pt ON p.id = pt.post_id " +
+            "JOIN post_tag pt on p.id = pt.post_id " +
             "WHERE (:authorName IS NULL OR p.author = :authorName) " +
             "AND (:min IS NULL OR p.reading_time >= :min) " +
             "AND (:max IS NULL OR p.reading_time <= :max) " +
-            "AND (p.community_id IN (SELECT id FROM communities WHERE is_closed = false) " +
-            "OR (p.community_id IN ( " +
+            "AND p.community_id IN ( " +
             "SELECT community_id FROM community_subscribers WHERE subscriber_id = :userId UNION " +
             "SELECT community_id FROM community_administrators WHERE administrator_id = :userId) " +
-            "AND EXISTS (SELECT 1 FROM communities WHERE id = p.community_id AND is_closed = true))) " +
+            "AND EXISTS (SELECT 1 FROM communities WHERE id = p.community_id) " +
             "AND (pt.tag_id IN :tags)",
             nativeQuery = true)
-    List<FullPost> findPostsByParametersWithTagsIfUserNotNull(
-            @Param("authorName") String authorName,
-            @Param("min") Integer min,
-            @Param("max") Integer max,
-           // @Param("onlyMyCommunities") Boolean onlyMyCommunities,
-            @Param("tags") List<UUID> tags,
-            @Param("userId") UUID userId,
-            Pageable pageable
-    );
+    List<FullPost> findOnlyCommunitiesPostsWithTags(@Param("authorName") String authorName,
+                                            @Param("min") Integer min,
+                                            @Param("max") Integer max,
+                                                    @Param("tags") List<UUID> tags,
+                                            @Param("userId") UUID userId,
+                                            Pageable pageable);
+
+    @Query(value = "SELECT * FROM posts p " +
+            "WHERE (:authorName IS NULL OR p.author = :authorName) " +
+            "AND (:min IS NULL OR p.reading_time >= :min) " +
+            "AND (:max IS NULL OR p.reading_time <= :max) " +
+            "AND p.community_id IN ( " +
+            "SELECT community_id FROM community_subscribers WHERE subscriber_id = :userId UNION " +
+            "SELECT community_id FROM community_administrators WHERE administrator_id = :userId) " +
+            "AND EXISTS (SELECT 1 FROM communities WHERE id = p.community_id)",
+            nativeQuery = true)
+    List<FullPost> findOnlyCommunitiesPostsWithoutTags(@Param("authorName") String authorName,
+                                                    @Param("min") Integer min,
+                                                    @Param("max") Integer max,
+                                                    @Param("userId") UUID userId,
+                                                    Pageable pageable);
 
     @Query(value = "SELECT * FROM posts p " +
             "JOIN post_tag pt ON p.id = pt.post_id " +
             "WHERE (:authorName IS NULL OR p.author = :authorName) " +
             "AND (:min IS NULL OR p.reading_time >= :min) " +
             "AND (:max IS NULL OR p.reading_time <= :max) " +
-            "AND (p.community_id IN (SELECT id FROM communities WHERE is_closed = false)) " +
+            "AND (:onlyMyCommunities = false OR p.community_id IN (SELECT id FROM communities)) " +
+            "AND (p.community_id IN (SELECT id FROM communities WHERE is_closed = false) " +
+            "OR (p.community_id IN ( " +
+            "SELECT community_id FROM community_subscribers WHERE subscriber_id = :userId UNION " +
+            "SELECT community_id FROM community_administrators WHERE administrator_id = :userId) " +
+            "AND EXISTS (SELECT 1 FROM communities WHERE id = p.community_id AND is_closed = true))" +
+            "OR (p.community_id IS NULL) " +
+            "AND (pt.tag_id IN :tags))",
+            nativeQuery = true)
+    List<FullPost> findPostsByParametersWithTagsIfUserNotNull(
+            @Param("authorName") String authorName,
+            @Param("min") Integer min,
+            @Param("max") Integer max,
+            @Param("tags") List<UUID> tags,
+            @Param("userId") UUID userId,
+            Pageable pageable
+    );
+
+
+    @Query(value = "SELECT * FROM posts p " +
+            "JOIN post_tag pt ON p.id = pt.post_id " +
+            "WHERE (:authorName IS NULL OR p.author = :authorName) " +
+            "AND (:min IS NULL OR p.reading_time >= :min) " +
+            "AND (:max IS NULL OR p.reading_time <= :max) " +
+            "AND (p.community_id IN (SELECT id FROM communities WHERE is_closed = false) " +
+            "OR p.community_id IS NULL) " +
             "AND (pt.tag_id IN :tags)",
             nativeQuery = true)
     List<FullPost> findPostsByParametersWithTagsIfUserNull(
             @Param("authorName") String authorName,
             @Param("min") Integer min,
             @Param("max") Integer max,
-            // @Param("onlyMyCommunities") Boolean onlyMyCommunities,
             @Param("tags") List<UUID> tags,
             Pageable pageable
     );
@@ -67,13 +102,13 @@ public interface PostRepository extends JpaRepository<FullPost, UUID> {
             "OR (p.community_id IN ( " +
             "SELECT community_id FROM community_subscribers WHERE subscriber_id = :userId UNION " +
             "SELECT community_id FROM community_administrators WHERE administrator_id = :userId) " +
-            "AND EXISTS (SELECT 1 FROM communities WHERE id = p.community_id AND is_closed = true)))" ,
+            "AND EXISTS (SELECT 1 FROM communities WHERE id = p.community_id AND is_closed = true)) " +
+            "OR p.community_id IS NULL)" ,
             nativeQuery = true)
     List<FullPost> findPostsByParametersWithoutTagsIfUserNotNull(
             @Param("authorName") String authorName,
             @Param("min") Integer min,
             @Param("max") Integer max,
-            //@Param("onlyMyCommunities") Boolean onlyMyCommunities,
             @Param("userId") UUID userId,
             Pageable pageable
     );
@@ -82,13 +117,13 @@ public interface PostRepository extends JpaRepository<FullPost, UUID> {
             "WHERE (:authorName IS NULL OR p.author = :authorName) " +
             "AND (:min IS NULL OR p.reading_time >= :min) " +
             "AND (:max IS NULL OR p.reading_time <= :max) " +
-            "AND (p.community_id IN (SELECT id FROM communities WHERE is_closed = false))",
+            "AND (p.community_id IN (SELECT id FROM communities WHERE is_closed = false) " +
+            "OR p.community_id IS NULL)",
             nativeQuery = true)
     List<FullPost> findPostsByParametersWithoutTagsIfUserNull(
             @Param("authorName") String authorName,
             @Param("min") Integer min,
             @Param("max") Integer max,
-            //@Param("onlyMyCommunities") Boolean onlyMyCommunities,
             Pageable pageable
     );
 
