@@ -61,7 +61,7 @@ public class PostService {
         }
         postRepository.save(post);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(post.getId());
     }
 
     @Transactional

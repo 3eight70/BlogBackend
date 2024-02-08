@@ -12,13 +12,10 @@ import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Models.User.UserDto;
 import com.example.BlogBackend.Repositories.CommunityRepository;
 import com.example.BlogBackend.Repositories.PostRepository;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -153,8 +150,7 @@ public class CommunityService {
                     "Пользователь не является администратором"), HttpStatus.FORBIDDEN);
         }
 
-        postService.createPost(createPostDto, user, community);
-        return ResponseEntity.ok().build();
+        return postService.createPost(createPostDto, user, community);
     }
 
     @Transactional
