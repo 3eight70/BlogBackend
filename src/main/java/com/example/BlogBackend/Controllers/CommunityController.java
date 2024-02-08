@@ -99,7 +99,7 @@ public class CommunityController {
             return communityService.createPostInCommunity(createPostDto, id, user);
         }
         catch (EntityNotFoundException e) {
-            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданного сообщества не существует"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданных тэгов не существует"), HttpStatus.NOT_FOUND);
         }
         catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);

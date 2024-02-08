@@ -11,6 +11,7 @@ import com.example.BlogBackend.Mappers.PostMapper;
 import com.example.BlogBackend.Models.Post.*;
 import com.example.BlogBackend.Models.Tag.Tag;
 import com.example.BlogBackend.Models.User.User;
+import com.example.BlogBackend.Repositories.CommunityRepository;
 import com.example.BlogBackend.Repositories.PostRepository;
 import com.example.BlogBackend.Repositories.TagRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,6 +26,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +35,7 @@ import java.util.*;
 public class PostService {
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
+    private final CommunityRepository communityRepository;
 
     @Transactional
     public ResponseEntity<?> createPost(CreatePostDto createPostDto, User user, Community community) {
@@ -65,12 +69,9 @@ public class PostService {
                                       Integer page, Integer size) {
 
         List<PostDto> posts = getPostsByUser(user, tags, authorName, sortOrder, minReadingTime,
-                maxReadingTime, onlyMyCommunities, page, size);
+                maxReadingTime, onlyMyCommunities);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("posts", posts);
-        response.put("pagination", new Pagination(size, page, getPagination(posts.size(), size)));
-        return ResponseEntity.ok(response);
+        return sendResponse(posts, page, size);
     }
 
     @Transactional
@@ -82,10 +83,17 @@ public class PostService {
         }
 
         List<PostDto> posts = getPostsByUser(null, tags, authorName, sortOrder, minReadingTime,
-                maxReadingTime, onlyMyCommunities, page, size);
+                maxReadingTime, onlyMyCommunities);
 
+        return sendResponse(posts, page, size);
+    }
+
+    public ResponseEntity<?> sendResponse(List<PostDto> posts, int page, int size){
         Map<String, Object> response = new HashMap<>();
-        response.put("posts", posts);
+        int startIndex = (page - 1) * size;
+        int endIndex = Math.min(startIndex + size, posts.size());
+
+        response.put("posts", posts.subList(startIndex, endIndex));
         response.put("pagination", new Pagination(size, page, getPagination(posts.size(), size)));
         return ResponseEntity.ok(response);
     }
@@ -101,42 +109,91 @@ public class PostService {
     }
 
     private List<PostDto> getPostsByUser(User user, List<UUID> tags, String authorName, PostSorting sortOrder,
-                                         Integer minReadingTime, Integer maxReadingTime, Boolean onlyMyCommunities, Integer page, Integer size) {
-        List<FullPost> fullPosts;
-        if (page <= 0 || size < 0){
-            throw new IllegalArgumentException();
-        }
+                                         Integer minReadingTime, Integer maxReadingTime, Boolean onlyMyCommunities) {
+        List<FullPost> posts = postRepository.findAll();
 
-        Pageable pageElements = PageRequest.of(page-1, size, getSorting(sortOrder));
+        List<FullPost> filteredPosts;
 
-        if (tags != null && !tags.isEmpty()){
-            if (user != null) {
-                if (!onlyMyCommunities) {
-                    fullPosts = postRepository.findPostsByParametersWithTagsIfUserNotNull(authorName, minReadingTime, maxReadingTime, tags, user.getId(), pageElements);
-                }
-                else{
-                    fullPosts = postRepository.findOnlyCommunitiesPostsWithTags(authorName, minReadingTime, maxReadingTime, tags, user.getId(), pageElements);
-                }
-            }
-            else{
-                fullPosts = postRepository.findPostsByParametersWithTagsIfUserNull(authorName, minReadingTime, maxReadingTime, tags, pageElements);
-            }
+        if (!onlyMyCommunities){
+            filteredPosts = posts.stream()
+                    .filter(p -> authorName == null || p.getAuthor().contains(authorName))
+                    .filter(p -> minReadingTime == null || p.getReadingTime() >= minReadingTime)
+                    .filter(p -> maxReadingTime == null || p.getReadingTime() <= maxReadingTime)
+                    .filter(p -> p.getCommunityId() == null || !isCommunityClosed(p.getCommunityId())
+                            || userInClosedCommunity(p.getCommunityId(), user))
+                    .filter(p-> tags == null || checkTags(p.getTags(), tags))
+                    .sorted((post1, post2) -> {
+                        Comparator<FullPost> comparator = getComparator(sortOrder);
+                        return comparator.compare(post1, post2);
+                    })
+                    .collect(Collectors.toList());
         }
         else{
-            if (user != null) {
-                if (!onlyMyCommunities) {
-                    fullPosts = postRepository.findPostsByParametersWithoutTagsIfUserNotNull(authorName, minReadingTime, maxReadingTime, user.getId(), pageElements);
-                }
-                else{
-                    fullPosts = postRepository.findOnlyCommunitiesPostsWithoutTags(authorName, minReadingTime, maxReadingTime, user.getId(), pageElements);
-                }
-            }
-            else{
-                fullPosts = postRepository.findPostsByParametersWithoutTagsIfUserNull(authorName, minReadingTime, maxReadingTime, pageElements);
-            }
+            filteredPosts = posts.stream()
+                    .filter(p -> authorName == null || p.getAuthor().contains(authorName))
+                    .filter(p -> minReadingTime == null || p.getReadingTime() >= minReadingTime)
+                    .filter(p -> maxReadingTime == null || p.getReadingTime() <= maxReadingTime)
+                    .filter(p -> user == null || userInCommunity(p.getCommunityId(), user))
+                    .filter(p-> tags == null || checkTags(p.getTags(), tags))
+                    .sorted((post1, post2) -> {
+                        Comparator<FullPost> comparator = getComparator(sortOrder);
+                        return comparator.compare(post1, post2);
+                    })
+                    .collect(Collectors.toList());
         }
 
-        return checkLikes(fullPosts, user);
+        return checkLikes(filteredPosts, user);
+    }
+
+    public Comparator getComparator(PostSorting sortOrder){
+        switch (sortOrder) {
+            case CreateDesc:
+                return Comparator.comparing(FullPost::getCreateTime).reversed();
+            case CreateAsc:
+                return Comparator.comparing(FullPost::getCreateTime);
+            case LikeAsc:
+                return Comparator.comparingInt(FullPost::getLikes);
+            case LikeDesc:
+                return Comparator.comparingInt(FullPost::getLikes).reversed();
+            default:
+                return Comparator.comparing(FullPost::getCreateTime);
+        }
+    }
+    public boolean checkTags(List<Tag> tags, List<UUID> requestTags){
+        for (UUID tagId : requestTags){
+            if (tags.contains(tagRepository.findTagById(tagId))){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isCommunityClosed(UUID communityId){
+        Community community = communityRepository.findCommunityById(communityId);
+        if (community == null){
+            return false;
+        }
+        return community.getIsClosed();
+    }
+
+    private boolean userInCommunity(UUID communityId, User user){
+        if (communityId == null){
+            return false;
+        }
+        Community community = communityRepository.findCommunityById(communityId);
+
+        if (community.getSubscribers().contains(user) || community.getAdministrators().contains(user)){
+            return true;
+        }
+
+        return false;
+    }
+    private boolean userInClosedCommunity(UUID communityId, User user){
+        if (!isCommunityClosed(communityId)){
+            return true;
+        }
+
+        return userInCommunity(communityId, user);
     }
 
     public List<PostDto> checkLikes(List<FullPost> fullPosts, User user) {

@@ -6,6 +6,7 @@ import com.example.BlogBackend.Models.Community.*;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.Post.CreatePostDto;
 import com.example.BlogBackend.Models.Post.FullPost;
+import com.example.BlogBackend.Models.Post.PostDto;
 import com.example.BlogBackend.Models.Post.PostSorting;
 import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Models.User.UserDto;
@@ -23,8 +24,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -139,6 +142,12 @@ public class CommunityService {
     @Transactional
     public ResponseEntity<?> createPostInCommunity(CreatePostDto createPostDto, UUID id, User user){
         Community community = getCommunityById(id);
+
+        if (community == null){
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(),
+                    "Заданного сообщества не существует"), HttpStatus.NOT_FOUND);
+        }
+
         if (!community.getAdministrators().contains(user)){
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.FORBIDDEN.value(),
                     "Пользователь не является администратором"), HttpStatus.FORBIDDEN);
@@ -180,16 +189,17 @@ public class CommunityService {
                     "Пользователь не находится в данном закрытом сообществе"), HttpStatus.BAD_REQUEST);
         }
 
-        List<FullPost> fullPosts;
-        Pageable pageElements = PageRequest.of(page-1, size, postService.getSorting(sortOrder));
+        List<FullPost> fullPosts = postRepository.findAllFullPostsInCommunity(id);
+        List<FullPost> filteredPosts = fullPosts.stream()
+                .filter(p-> tags == null || postService.checkTags(p.getTags(), tags))
+                .sorted((post1, post2) -> {
+                    Comparator<FullPost> comparator = postService.getComparator(sortOrder);
+                    return comparator.compare(post1, post2);
+                })
+                .collect(Collectors.toList());
 
-        if (tags == null){
-            fullPosts = postRepository.findCommunityPostsWithoutTags(id, pageElements);
-        }
-        else{
-            fullPosts = postRepository.findCommunityPostsWithTags(tags, id, pageElements);
-        }
+        List<PostDto> posts = postService.checkLikes(filteredPosts, user);
 
-        return ResponseEntity.ok(postService.checkLikes(fullPosts, user));
+        return postService.sendResponse(posts, page, size);
     }
 }
