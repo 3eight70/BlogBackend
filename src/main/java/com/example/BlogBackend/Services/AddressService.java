@@ -6,15 +6,23 @@ import com.example.BlogBackend.Models.Gar.*;
 import com.example.BlogBackend.Repositories.AddressRepository;
 import com.example.BlogBackend.Repositories.HierarchyRepository;
 import com.example.BlogBackend.Repositories.HouseRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -24,44 +32,84 @@ public class AddressService {
     private final HouseRepository houseRepository;
     private final HierarchyRepository hierarchyRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     public ResponseEntity<?> searchAddress(Long parentObjectId, String query) {
         List<AsAdmHierarchy> hierarchies = hierarchyRepository.findAllByParentobjid(parentObjectId);
         if (hierarchies == null) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(),
                     "Адреса с таким parentObjectId не существует"), HttpStatus.NOT_FOUND);
         }
+
+
+
         List<GarResponse> result = new ArrayList<>();
 
-        for (AsAdmHierarchy hierarchy : hierarchies) {
-            Long hierarchyId = hierarchy.getObjectid();
+        if (query != null) {
+            String jpqlAddressQuery = "SELECT a " +
+                    "FROM AsAdmHierarchy h " +
+                    "JOIN AsAddrObj a ON h.objectid = a.objectid " +
+                    "WHERE h.parentobjid = :parentObjectId " +
+                    "AND a.isactive = 1 " +
+                    "AND a.isactual = 1 " +
+                    "AND a.name LIKE :query";
 
-            AsAddrObj address = addressRepository.findByObjectidAndIsactiveAndIsactual(hierarchyId);
-            AsHouse house = houseRepository.findByObjectidAndIsactiveAndIsactual(hierarchyId);
+            String jpqlHouseQuery = "SELECT hs " +
+                    "FROM AsAdmHierarchy h " +
+                    "JOIN AsHouse hs ON h.objectid = hs.objectid " +
+                    "WHERE h.parentobjid = :parentObjectId " +
+                    "AND hs.isactive = 1 " +
+                    "AND hs.isactual = 1 " +
+                    "AND hs.housenum LIKE :query";
 
-            if (address != null) {
-                if (query != null) {
-                    if (address.getName().contains(query)) {
-                        result.add(GarMapper.addressToGarResponse(address));
-                    }
-                } else {
+
+            Query addressQuery = entityManager.createQuery(jpqlAddressQuery)
+                    .setParameter("parentObjectId", parentObjectId)
+                    .setParameter("query", "%" + query + "%");
+
+            Query houseQuery = entityManager.createQuery(jpqlHouseQuery)
+                    .setParameter("parentObjectId", parentObjectId)
+                    .setParameter("query", "%" + query + "%");
+
+            List<AsAddrObj> addresses = addressQuery.getResultList();
+
+            if (addresses != null) {
+                for (AsAddrObj address : addresses) {
                     result.add(GarMapper.addressToGarResponse(address));
                 }
-            } else if (house != null) {
-                if (query != null) {
-                    if (house.getHousenum().contains(query)) {
-                        result.add(GarMapper.houseToGarResponse(house));
-                    }
-                } else {
+            }
+             else {
+                 List<AsHouse> houses = houseQuery.getResultList();
+
+                for (AsHouse house : houses) {
                     result.add(GarMapper.houseToGarResponse(house));
                 }
             }
+
+
+
+        } else {
+            result = hierarchies.parallelStream()
+                    .flatMap(hierarchy -> {
+                        AsAddrObj address = addressRepository.findByObjectidAndIsactiveAndIsactual(hierarchy.getObjectid());
+                        if (address != null){
+                            return Stream.of(GarMapper.addressToGarResponse(address));
+                        }
+                        else {
+                            AsHouse house = houseRepository.findByObjectidAndIsactiveAndIsactual(hierarchy.getObjectid());
+                            if (house != null) {
+                                return Stream.of(GarMapper.houseToGarResponse(house));
+                            } else {
+                                return Stream.empty();
+                            }
+                        }
+                    })
+                    .limit(10)
+                    .collect(Collectors.toList());
         }
 
         setObjectLevels(result);
-
-        if (query == null) {
-            return ResponseEntity.ok(result.subList(0, Math.min(10, result.size())));
-        }
 
         return ResponseEntity.ok(result);
     }
@@ -96,9 +144,12 @@ public class AddressService {
             addressList = getPath(addressList, houseFromHierarchy.getObjectid());
         }
         List<GarResponse> result = new ArrayList<>();
+        List<AsAddrObj> addresses = addressRepository.findAllByIsactiveAndIsactual();
 
         for (AsAdmHierarchy hierarchy : addressList){
-            AsAddrObj curAddress = addressRepository.findByObjectidAndIsactiveAndIsactual(hierarchy.getObjectid());
+            AsAddrObj curAddress = addresses.stream()
+                            .filter(a -> a.getObjectid().equals(hierarchy.getObjectid()))
+                    .findFirst().orElse(null);
             AsHouse curHouse = houseRepository.findByObjectidAndIsactiveAndIsactual(hierarchy.getObjectid());
 
             if (curAddress != null){

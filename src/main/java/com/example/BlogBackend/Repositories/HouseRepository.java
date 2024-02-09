@@ -2,9 +2,12 @@ package com.example.BlogBackend.Repositories;
 
 import com.example.BlogBackend.Models.Gar.AsAddrObj;
 import com.example.BlogBackend.Models.Gar.AsHouse;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.UUID;
+import java.util.List;
 
 public interface HouseRepository extends JpaRepository<AsHouse, Long> {
     default AsHouse findByObjectidAndIsactiveAndIsactual(Long objectid) {
@@ -22,4 +25,5 @@ public interface HouseRepository extends JpaRepository<AsHouse, Long> {
     AsHouse findByObjectguidAndIsactiveAndIsactual(UUID objectguid,
                                                  int isactive,
                                                  int isactual);
+
 }
