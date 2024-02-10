@@ -1,13 +1,12 @@
 package com.example.BlogBackend.Services;
 
 import com.example.BlogBackend.Mappers.CommentMapper;
+import com.example.BlogBackend.Mappers.PostMapper;
 import com.example.BlogBackend.Models.Comment.Comment;
 import com.example.BlogBackend.Models.Comment.CommentDto;
 import com.example.BlogBackend.Models.Community.Community;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.Pagination;
-import com.example.BlogBackend.Models.Post.FullPost;
-import com.example.BlogBackend.Mappers.PostMapper;
 import com.example.BlogBackend.Models.Post.*;
 import com.example.BlogBackend.Models.Tag.Tag;
 import com.example.BlogBackend.Models.User.User;
@@ -18,8 +17,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +24,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +51,7 @@ public class PostService {
         post.setImage(createPostDto.getImage());
         post.setTags(tags);
 
-        if (community != null){
+        if (community != null) {
             post.setCommunityId(community.getId());
             post.setCommunityName(community.getName());
         }
@@ -79,7 +75,7 @@ public class PostService {
     public ResponseEntity<?> getPostsForUnauthorizedUser(List<UUID> tags, String authorName, PostSorting sortOrder,
                                                          Integer minReadingTime, Integer maxReadingTime, Boolean onlyMyCommunities,
                                                          Integer page, Integer size) {
-        if (onlyMyCommunities){
+        if (onlyMyCommunities) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Пользователь не авторизован"), HttpStatus.BAD_REQUEST);
         }
 
@@ -89,7 +85,7 @@ public class PostService {
         return sendResponse(posts, page, size);
     }
 
-    public ResponseEntity<?> sendResponse(List<PostDto> posts, int page, int size){
+    public ResponseEntity<?> sendResponse(List<PostDto> posts, int page, int size) {
         Map<String, Object> response = new HashMap<>();
         int startIndex = (page - 1) * size;
         int endIndex = Math.min(startIndex + size, posts.size());
@@ -99,11 +95,11 @@ public class PostService {
         return ResponseEntity.ok(response);
     }
 
-    private int getPagination(int postsSize, int size){
-        int paginationSize = (int)Math.ceil((postsSize)/(double)size);
+    private int getPagination(int postsSize, int size) {
+        int paginationSize = (int) Math.ceil((postsSize) / (double) size);
 
-        if (postsSize % size == 0){
-            paginationSize+=1;
+        if (postsSize % size == 0) {
+            paginationSize += 1;
         }
 
         return paginationSize;
@@ -115,27 +111,26 @@ public class PostService {
 
         List<FullPost> filteredPosts;
 
-        if (!onlyMyCommunities){
+        if (!onlyMyCommunities) {
             filteredPosts = posts.stream()
                     .filter(p -> authorName == null || p.getAuthor().contains(authorName))
                     .filter(p -> minReadingTime == null || p.getReadingTime() >= minReadingTime)
                     .filter(p -> maxReadingTime == null || p.getReadingTime() <= maxReadingTime)
                     .filter(p -> p.getCommunityId() == null || !isCommunityClosed(p.getCommunityId())
                             || userInClosedCommunity(p.getCommunityId(), user))
-                    .filter(p-> tags == null || checkTags(p.getTags(), tags))
+                    .filter(p -> tags == null || checkTags(p.getTags(), tags))
                     .sorted((post1, post2) -> {
                         Comparator<FullPost> comparator = getComparator(sortOrder);
                         return comparator.compare(post1, post2);
                     })
                     .collect(Collectors.toList());
-        }
-        else{
+        } else {
             filteredPosts = posts.stream()
                     .filter(p -> authorName == null || p.getAuthor().contains(authorName))
                     .filter(p -> minReadingTime == null || p.getReadingTime() >= minReadingTime)
                     .filter(p -> maxReadingTime == null || p.getReadingTime() <= maxReadingTime)
                     .filter(p -> user == null || userInCommunity(p.getCommunityId(), user))
-                    .filter(p-> tags == null || checkTags(p.getTags(), tags))
+                    .filter(p -> tags == null || checkTags(p.getTags(), tags))
                     .sorted((post1, post2) -> {
                         Comparator<FullPost> comparator = getComparator(sortOrder);
                         return comparator.compare(post1, post2);
@@ -146,7 +141,7 @@ public class PostService {
         return checkLikes(filteredPosts, user);
     }
 
-    public Comparator getComparator(PostSorting sortOrder){
+    public Comparator getComparator(PostSorting sortOrder) {
         switch (sortOrder) {
             case CreateDesc:
                 return Comparator.comparing(FullPost::getCreateTime).reversed();
@@ -160,37 +155,39 @@ public class PostService {
                 return Comparator.comparing(FullPost::getCreateTime);
         }
     }
-    public boolean checkTags(List<Tag> tags, List<UUID> requestTags){
-        for (UUID tagId : requestTags){
-            if (tags.contains(tagRepository.findTagById(tagId))){
+
+    public boolean checkTags(List<Tag> tags, List<UUID> requestTags) {
+        for (UUID tagId : requestTags) {
+            if (tags.contains(tagRepository.findTagById(tagId))) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean isCommunityClosed(UUID communityId){
+    private boolean isCommunityClosed(UUID communityId) {
         Community community = communityRepository.findCommunityById(communityId);
-        if (community == null){
+        if (community == null) {
             return false;
         }
         return community.getIsClosed();
     }
 
-    private boolean userInCommunity(UUID communityId, User user){
-        if (communityId == null){
+    private boolean userInCommunity(UUID communityId, User user) {
+        if (communityId == null) {
             return false;
         }
         Community community = communityRepository.findCommunityById(communityId);
 
-        if (community.getSubscribers().contains(user) || community.getAdministrators().contains(user)){
+        if (community.getSubscribers().contains(user) || community.getAdministrators().contains(user)) {
             return true;
         }
 
         return false;
     }
-    private boolean userInClosedCommunity(UUID communityId, User user){
-        if (!isCommunityClosed(communityId)){
+
+    private boolean userInClosedCommunity(UUID communityId, User user) {
+        if (!isCommunityClosed(communityId)) {
             return true;
         }
 
@@ -273,7 +270,7 @@ public class PostService {
         }
 
         List<CommentDto> comments = new ArrayList<>();
-        for (Comment comment: post.getComments()){
+        for (Comment comment : post.getComments()) {
             comments.add(CommentMapper.commentToCommentDto(comment));
         }
 
@@ -281,7 +278,7 @@ public class PostService {
         return PostMapper.postFullDtoToConcretePostDto(post, comments);
     }
 
-    public Sort getSorting(PostSorting sortOrder){
+    public Sort getSorting(PostSorting sortOrder) {
 
         switch (sortOrder) {
             case CreateDesc:

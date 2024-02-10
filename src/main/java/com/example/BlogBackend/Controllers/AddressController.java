@@ -20,21 +20,19 @@ public class AddressController {
 
     @GetMapping("/search")
     public ResponseEntity<?> search(@RequestParam(defaultValue = "0") Long parentObjectId,
-                                    @RequestParam(required = false) String query){
-        try{
+                                    @RequestParam(required = false) String query) {
+        try {
             return addressService.searchAddress(parentObjectId, query);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/chain")
-    public ResponseEntity<?> chain(@RequestParam(required = false) UUID objectGuid){
-        try{
+    public ResponseEntity<?> chain(@RequestParam(required = false) UUID objectGuid) {
+        try {
             return addressService.getAddressChain(objectGuid);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

@@ -16,21 +16,19 @@ public class TagController {
     private final TagService tagService;
 
     @GetMapping
-    public ResponseEntity<?> getTags(){
-        try{
+    public ResponseEntity<?> getTags() {
+        try {
             return ResponseEntity.ok(tagService.getTagList());
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping
-    public ResponseEntity<?> createTag(@Valid @RequestBody CreateTagDto createTagDto){
+    public ResponseEntity<?> createTag(@Valid @RequestBody CreateTagDto createTagDto) {
         try {
             return ResponseEntity.ok(tagService.createTag(createTagDto));
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

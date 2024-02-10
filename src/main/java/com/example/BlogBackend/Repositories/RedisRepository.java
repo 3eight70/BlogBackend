@@ -8,19 +8,19 @@ import java.util.concurrent.TimeUnit;
 
 @Repository
 @AllArgsConstructor
-public class RedisRepository{
+public class RedisRepository {
     private final RedisTemplate<String, String> redisTemplate;
 
-    public void save(String key, String value, long lifetime){
+    public void save(String key, String value, long lifetime) {
         redisTemplate.opsForValue().set(key, value);
         redisTemplate.expire(key, lifetime, TimeUnit.MILLISECONDS);
     }
 
-    public Boolean checkToken(String key){
+    public Boolean checkToken(String key) {
         return redisTemplate.hasKey(key);
     }
 
-    public void delete(String key){
+    public void delete(String key) {
         redisTemplate.delete(key);
     }
 }

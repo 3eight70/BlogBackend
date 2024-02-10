@@ -5,7 +5,6 @@ import com.example.BlogBackend.Models.Comment.EditCommentDto;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Services.CommentService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,41 +20,37 @@ public class CommentController {
     private final CommentService commentService;
 
     @GetMapping("/comment/{id}/tree")
-    public ResponseEntity<?> getNestedComments(@PathVariable UUID id){
-        try{
+    public ResponseEntity<?> getNestedComments(@PathVariable UUID id) {
+        try {
             return commentService.getAllNestedComments(id);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping("/post/{id}/comment")
-    public ResponseEntity<?> addCommentToPost(@PathVariable UUID id, @RequestBody CreateCommentDto createCommentDto, @AuthenticationPrincipal User user){
-        try{
+    public ResponseEntity<?> addCommentToPost(@PathVariable UUID id, @RequestBody CreateCommentDto createCommentDto, @AuthenticationPrincipal User user) {
+        try {
             return commentService.addComment(id, createCommentDto, user);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PutMapping("/comment/{id}")
-    public ResponseEntity<?> editComment(@PathVariable UUID id, @RequestBody EditCommentDto editCommentDto){
-        try{
+    public ResponseEntity<?> editComment(@PathVariable UUID id, @RequestBody EditCommentDto editCommentDto) {
+        try {
             return commentService.editComment(id, editCommentDto);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @DeleteMapping("/comment/{id}")
-    public ResponseEntity<?> deleteComment(@PathVariable UUID id){
-        try{
+    public ResponseEntity<?> deleteComment(@PathVariable UUID id) {
+        try {
             return commentService.deleteComment(id);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

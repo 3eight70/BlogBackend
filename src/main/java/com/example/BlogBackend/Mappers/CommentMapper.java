@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class CommentMapper {
-    public static Comment createCommentDtoToComment(CreateCommentDto createCommentDto, User user){
+    public static Comment createCommentDtoToComment(CreateCommentDto createCommentDto, User user) {
         return new Comment(
                 UUID.randomUUID(),
                 LocalDateTime.now(),
@@ -23,7 +23,7 @@ public class CommentMapper {
         );
     }
 
-    public static CommentDto commentToCommentDto(Comment comment){
+    public static CommentDto commentToCommentDto(Comment comment) {
         return new CommentDto(
                 comment.getId(),
                 comment.getCreateTime(),

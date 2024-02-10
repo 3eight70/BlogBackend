@@ -21,7 +21,7 @@ public interface PostRepository extends JpaRepository<FullPost, UUID> {
     FullPost findByCommentsContains(Comment comment);
 
     @Query(value = "SELECT * FROM posts p " +
-    "WHERE p.community_id IS NOT NULL " +
+            "WHERE p.community_id IS NOT NULL " +
             "AND p.community_id = :communityId",
     nativeQuery = true)
     List<FullPost> findAllFullPostsInCommunity(

@@ -16,11 +16,10 @@ public class AuthorController {
     private final AuthorService authorService;
 
     @GetMapping("/list")
-    public ResponseEntity<?> getAuthorList(){
-        try{
+    public ResponseEntity<?> getAuthorList() {
+        try {
             return authorService.getAuthorsList();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

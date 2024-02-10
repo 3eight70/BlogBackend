@@ -16,11 +16,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TagService {
     private final TagRepository tagRepository;
-    public List<Tag> getTagList(){
+
+    public List<Tag> getTagList() {
         return tagRepository.findAll();
     }
 
-    public Tag createTag(CreateTagDto createTagDto){
+    public Tag createTag(CreateTagDto createTagDto) {
         Tag tag = new Tag(UUID.randomUUID(), LocalDateTime.now(), createTagDto.getName());
         tagRepository.save(tag);
 

@@ -6,11 +6,11 @@ import com.example.BlogBackend.Models.User.UserDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 public class CommunityMapper {
-    public static Community createCommunityDtoToCommunity(CreateCommunityDto communityDto){
+    public static Community createCommunityDtoToCommunity(CreateCommunityDto communityDto) {
         return new Community(
                 UUID.randomUUID(),
                 LocalDateTime.now(),
@@ -23,7 +23,7 @@ public class CommunityMapper {
                 new ArrayList<>());
     }
 
-    public static CommunityDto communityToCommunityDto(Community community){
+    public static CommunityDto communityToCommunityDto(Community community) {
         return new CommunityDto(
                 community.getId(),
                 community.getCreateTime(),
@@ -34,11 +34,11 @@ public class CommunityMapper {
                 community.getAdministratorsCount());
     }
 
-    public static CommunityUserDto communityToCommunityUserDto(Community community, User user, CommunityRole communityRole){
+    public static CommunityUserDto communityToCommunityUserDto(Community community, User user, CommunityRole communityRole) {
         return new CommunityUserDto(user.getId(), community.getId(), communityRole);
     }
 
-    public static CommunityFullDto communityToCommunityFullDto(Community community, List<UserDto> administrators){
+    public static CommunityFullDto communityToCommunityFullDto(Community community, List<UserDto> administrators) {
         return new CommunityFullDto(
                 community.getId(),
                 community.getCreateTime(),

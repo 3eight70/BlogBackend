@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class UserMapper {
-    public static UserProfileDto userDtoToUserProfile(User userDto){
+    public static UserProfileDto userDtoToUserProfile(User userDto) {
         return new UserProfileDto(userDto.getId(),
                 userDto.getCreateTime(),
                 userDto.getFullName(),
@@ -20,7 +20,7 @@ public class UserMapper {
                 userDto.getPhoneNumber());
     }
 
-    public static User userRegisterModelToUser(UserRegisterModel userRegisterModel){
+    public static User userRegisterModelToUser(UserRegisterModel userRegisterModel) {
         return new User(UUID.randomUUID(),
                 LocalDateTime.now(),
                 userRegisterModel.getFullName(),
@@ -31,7 +31,7 @@ public class UserMapper {
                 userRegisterModel.getPassword());
     }
 
-    public static UserDto userToUserDto(User user){
+    public static UserDto userToUserDto(User user) {
         return new UserDto(
                 user.getId(),
                 user.getCreateTime(),
@@ -43,7 +43,7 @@ public class UserMapper {
         );
     }
 
-    public static AuthorDto userToAuthorDto(User user, int totalLikes, int totalPosts){
+    public static AuthorDto userToAuthorDto(User user, int totalLikes, int totalPosts) {
         return new AuthorDto(
                 user.getFullName(),
                 user.getBirthDate(),
@@ -51,6 +51,6 @@ public class UserMapper {
                 totalPosts,
                 totalLikes,
                 user.getCreateTime()
-                );
+        );
     }
 }

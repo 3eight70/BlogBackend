@@ -1,6 +1,6 @@
 package com.example.BlogBackend.configurations;
 
-import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
+import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Repositories.RedisRepository;
 import com.example.BlogBackend.Services.UserService;
 import com.example.BlogBackend.utils.JwtTokenUtils;
@@ -12,14 +12,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import com.example.BlogBackend.Models.User.*;
 
 import java.io.IOException;
 
@@ -43,7 +39,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         response.setHeader("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Auth-Token");
 
         try {
-            if (authHeader != null && authHeader.equals("Bearer null")){
+            if (authHeader != null && authHeader.equals("Bearer null")) {
                 authHeader = null;
             }
 
@@ -55,11 +51,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 }
                 email = jwtTokenUtils.getUserEmail(jwt);
             }
-        }
-        catch (ExpiredJwtException e){
+        } catch (ExpiredJwtException e) {
             log.debug("Токен просрочен");
-        }
-        catch (SignatureException e) {
+        } catch (SignatureException e) {
             log.debug("Неверная подпись");
         }
 

@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -54,8 +53,7 @@ public class PostController {
             }
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Номер страницы или количество постов указаны неверно"), HttpStatus.BAD_REQUEST);
-        }
-         catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -89,7 +87,7 @@ public class PostController {
     @GetMapping("/post/{id}")
     public ResponseEntity<?> getInfoAboutConcretePost(@PathVariable("id") UUID id, @AuthenticationPrincipal User user) {
         try {
-            if (user != null ) {
+            if (user != null) {
                 return postService.getInfoAboutConcretePostForAuthorized(user, id);
             } else {
                 return postService.getInfoAboutConcretePostForUnauthorized(id);

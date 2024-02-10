@@ -32,7 +32,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public ResponseEntity<?> editUserProfile(UserEditProfileDto userEditProfileDto, User user){
+    public ResponseEntity<?> editUserProfile(UserEditProfileDto userEditProfileDto, User user) {
         user.setEmail(userEditProfileDto.getEmail());
         user.setGender(userEditProfileDto.getGender());
         user.setFullName(userEditProfileDto.getFullName());
@@ -48,10 +48,10 @@ public class UserService implements UserDetailsService {
         return UserMapper.userDtoToUserProfile(user);
     }
 
-    public ResponseEntity<?> logoutUser(String token){
+    public ResponseEntity<?> logoutUser(String token) {
         String tokenId = "";
 
-        if (token != null){
+        if (token != null) {
             token = token.substring(7);
             tokenId = jwtTokenUtils.getIdFromToken(token);
         }
@@ -60,7 +60,7 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<?> loginUser(LoginCredentials authRequest){
+    public ResponseEntity<?> loginUser(LoginCredentials authRequest) {
         User user = userRepository.findByEmail(authRequest.getEmail());
         String token = jwtTokenUtils.generateToken(user);
 

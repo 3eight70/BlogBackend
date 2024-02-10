@@ -2,7 +2,6 @@ package com.example.BlogBackend.Services;
 
 import com.example.BlogBackend.Mappers.CommentMapper;
 import com.example.BlogBackend.Models.Comment.Comment;
-import com.example.BlogBackend.Models.Comment.CommentDto;
 import com.example.BlogBackend.Models.Comment.CreateCommentDto;
 import com.example.BlogBackend.Models.Comment.EditCommentDto;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
@@ -19,8 +18,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,13 +40,11 @@ public class CommentService {
 
         if (parentComment == null && createCommentDto.getParentId() != null) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Комментария-родителя не существует"), HttpStatus.NOT_FOUND);
-        }
-        else if (parentComment == null){
+        } else if (parentComment == null) {
             fullPost.getComments().add(comment);
 
             postRepository.save(fullPost);
-        }
-        else if (parentComment != null) {
+        } else if (parentComment != null) {
             parentComment.setSubComments(parentComment.getSubComments() + 1);
             Comment parent = getRootParent(parentComment.getParentId(), parentComment.getId());
             if (parent != parentComment) {
@@ -61,7 +58,7 @@ public class CommentService {
         return ResponseEntity.ok().build();
     }
 
-    private Comment getRootParent(UUID parentId, UUID currentId){
+    private Comment getRootParent(UUID parentId, UUID currentId) {
         Comment parent = commentRepository.findCommentById(parentId);
         if (parent != null) {
             return getRootParent(parent.getParentId(), parent.getId());
@@ -77,7 +74,7 @@ public class CommentService {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданного комментария не существует"), HttpStatus.NOT_FOUND);
         }
 
-         List<Comment> allNestedComments = new ArrayList<>();
+        List<Comment> allNestedComments = new ArrayList<>();
         getAllNestedCommentsRecursively(rootComment, allNestedComments);
         return ResponseEntity.ok(allNestedComments);
     }
@@ -96,8 +93,7 @@ public class CommentService {
         Comment comment = commentRepository.findCommentById(id);
         if (comment == null) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданного комментария не существует"), HttpStatus.NOT_FOUND);
-        }
-        else if (comment.getDeleteDate() != null){
+        } else if (comment.getDeleteDate() != null) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Комментарий удален"), HttpStatus.BAD_REQUEST);
         }
 
@@ -116,8 +112,7 @@ public class CommentService {
 
         if (comment == null) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданного комментария не существует"), HttpStatus.NOT_FOUND);
-        }
-        else if (comment.getDeleteDate() != null){
+        } else if (comment.getDeleteDate() != null) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Комментарий уже удален"), HttpStatus.BAD_REQUEST);
         }
         UUID parentId = comment.getParentId();
@@ -125,7 +120,7 @@ public class CommentService {
         if (comment.getSubComments() == 0) {
             FullPost commentFullPost = postRepository.findByCommentsContains(comment);
 
-            if (commentFullPost != null){
+            if (commentFullPost != null) {
                 commentFullPost.getComments().remove(comment);
                 commentFullPost.updateComments();
             }

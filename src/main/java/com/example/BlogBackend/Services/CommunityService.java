@@ -35,19 +35,19 @@ public class CommunityService {
     private final PostRepository postRepository;
 
     @Transactional
-    public ResponseEntity<?> getCommunities(){
-        List <Community> communities = communityRepository.findAll();
+    public ResponseEntity<?> getCommunities() {
+        List<Community> communities = communityRepository.findAll();
         List<CommunityDto> communitiesDto = new ArrayList<>();
 
-        for(Community community: communities){
+        for (Community community : communities) {
             communitiesDto.add(CommunityMapper.communityToCommunityDto(community));
         }
         return ResponseEntity.ok(communitiesDto);
     }
 
     @Transactional
-    public ResponseEntity<?> createCommunity(CreateCommunityDto createCommunityDto, User user){
-        if (communityRepository.findByName(createCommunityDto.getName()) != null){
+    public ResponseEntity<?> createCommunity(CreateCommunityDto createCommunityDto, User user) {
+        if (communityRepository.findByName(createCommunityDto.getName()) != null) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Сообщество с таким названием уже существует"), HttpStatus.BAD_REQUEST);
         }
 
@@ -65,7 +65,7 @@ public class CommunityService {
     public ResponseEntity<?> subscribe(User user, UUID id) {
         Community community = getCommunityById(id);
 
-        if (community.getAdministrators().contains(user)){
+        if (community.getAdministrators().contains(user)) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(),
                     "Пользователь является администратором данного сообщества"), HttpStatus.BAD_REQUEST);
         }
@@ -99,15 +99,14 @@ public class CommunityService {
     }
 
     @Transactional
-    public ResponseEntity<?> getUsersCommunities(User user){
+    public ResponseEntity<?> getUsersCommunities(User user) {
         List<Community> communities = communityRepository.findAll();
         List<CommunityUserDto> userRoles = new ArrayList<>();
 
-        for (Community community : communities){
-            if (community.getSubscribers().contains(user)){
+        for (Community community : communities) {
+            if (community.getSubscribers().contains(user)) {
                 userRoles.add(CommunityMapper.communityToCommunityUserDto(community, user, CommunityRole.Subscriber));
-            }
-            else if (community.getAdministrators().contains(user)){
+            } else if (community.getAdministrators().contains(user)) {
                 userRoles.add(CommunityMapper.communityToCommunityUserDto(community, user, CommunityRole.Administrator));
             }
         }
@@ -116,18 +115,18 @@ public class CommunityService {
     }
 
     @Transactional
-    public ResponseEntity<?> getInfoAboutCommunity(UUID id){
+    public ResponseEntity<?> getInfoAboutCommunity(UUID id) {
         Community community = getCommunityById(id);
         List<UserDto> administrators = new ArrayList<>();
 
-        for (User administrator: community.getAdministrators()){
+        for (User administrator : community.getAdministrators()) {
             administrators.add(UserMapper.userToUserDto(administrator));
         }
 
         return ResponseEntity.ok(CommunityMapper.communityToCommunityFullDto(community, administrators));
     }
 
-    private Community getCommunityById(UUID id){
+    private Community getCommunityById(UUID id) {
         Community community = communityRepository.findCommunityById(id);
         if (community == null) {
             throw new EntityNotFoundException();
@@ -137,15 +136,15 @@ public class CommunityService {
     }
 
     @Transactional
-    public ResponseEntity<?> createPostInCommunity(CreatePostDto createPostDto, UUID id, User user){
+    public ResponseEntity<?> createPostInCommunity(CreatePostDto createPostDto, UUID id, User user) {
         Community community = getCommunityById(id);
 
-        if (community == null){
+        if (community == null) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(),
                     "Заданного сообщества не существует"), HttpStatus.NOT_FOUND);
         }
 
-        if (!community.getAdministrators().contains(user)){
+        if (!community.getAdministrators().contains(user)) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.FORBIDDEN.value(),
                     "Пользователь не является администратором"), HttpStatus.FORBIDDEN);
         }
@@ -154,14 +153,13 @@ public class CommunityService {
     }
 
     @Transactional
-    public ResponseEntity<?> getUsersGreatestRole(UUID id, User user){
+    public ResponseEntity<?> getUsersGreatestRole(UUID id, User user) {
         Community community = getCommunityById(id);
         CommunityRole greatestRole = null;
 
-        if (community.getAdministrators().contains(user)){
+        if (community.getAdministrators().contains(user)) {
             greatestRole = CommunityRole.Administrator;
-        }
-        else if (community.getSubscribers().contains(user)){
+        } else if (community.getSubscribers().contains(user)) {
             greatestRole = CommunityRole.Subscriber;
         }
 
@@ -173,21 +171,20 @@ public class CommunityService {
     }
 
     @Transactional
-    public ResponseEntity<?> getCommunityPosts(UUID id, User user, List<UUID> tags, int page, int size, PostSorting sortOrder){
+    public ResponseEntity<?> getCommunityPosts(UUID id, User user, List<UUID> tags, int page, int size, PostSorting sortOrder) {
         Community community = getCommunityById(id);
 
-        if (community.getIsClosed() && user == null){
+        if (community.getIsClosed() && user == null) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.UNAUTHORIZED.value(),
                     "Пользователь не авторизован"), HttpStatus.UNAUTHORIZED);
-        }
-        else if (community.getIsClosed() && !community.getAdministrators().contains(user) && !community.getSubscribers().contains(user)){
+        } else if (community.getIsClosed() && !community.getAdministrators().contains(user) && !community.getSubscribers().contains(user)) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(),
                     "Пользователь не находится в данном закрытом сообществе"), HttpStatus.BAD_REQUEST);
         }
 
         List<FullPost> fullPosts = postRepository.findAllFullPostsInCommunity(id);
         List<FullPost> filteredPosts = fullPosts.stream()
-                .filter(p-> tags == null || postService.checkTags(p.getTags(), tags))
+                .filter(p -> tags == null || postService.checkTags(p.getTags(), tags))
                 .sorted((post1, post2) -> {
                     Comparator<FullPost> comparator = postService.getComparator(sortOrder);
                     return comparator.compare(post1, post2);

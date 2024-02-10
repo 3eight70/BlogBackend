@@ -1,9 +1,11 @@
 package com.example.BlogBackend.Mappers;
 
-import com.example.BlogBackend.Models.Gar.*;
+import com.example.BlogBackend.Models.Gar.AsAddrObj;
+import com.example.BlogBackend.Models.Gar.AsHouse;
+import com.example.BlogBackend.Models.Gar.GarResponse;
 
 public class GarMapper {
-    public static GarResponse addressToGarResponse(AsAddrObj address){
+    public static GarResponse addressToGarResponse(AsAddrObj address) {
         return new GarResponse(
                 address.getObjectid(),
                 address.getObjectguid(),
@@ -13,7 +15,7 @@ public class GarMapper {
         );
     }
 
-    public static GarResponse houseToGarResponse(AsHouse house){
+    public static GarResponse houseToGarResponse(AsHouse house) {
         return new GarResponse(
                 house.getObjectid(),
                 house.getObjectguid(),

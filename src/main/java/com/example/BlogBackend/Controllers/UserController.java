@@ -1,7 +1,10 @@
 package com.example.BlogBackend.Controllers;
 
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
-import com.example.BlogBackend.Models.User.*;
+import com.example.BlogBackend.Models.User.LoginCredentials;
+import com.example.BlogBackend.Models.User.User;
+import com.example.BlogBackend.Models.User.UserEditProfileDto;
+import com.example.BlogBackend.Models.User.UserRegisterModel;
 import com.example.BlogBackend.Services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,30 +17,27 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/account")
-public class UserController extends BaseController {
+public class UserController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerNewUser(@Valid @RequestBody UserRegisterModel userRegisterModel){
+    public ResponseEntity<?> registerNewUser(@Valid @RequestBody UserRegisterModel userRegisterModel) {
         userRegisterModel.setPassword(passwordEncoder.encode(userRegisterModel.getPassword()));
 
-        try{
+        try {
             return userService.registerUser(userRegisterModel);
-        }
-        catch (BadCredentialsException e){
+        } catch (BadCredentialsException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(), "Данные введены некорректно"), HttpStatus.BAD_REQUEST);
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginCredentials authRequest){
+    public ResponseEntity<?> login(@RequestBody LoginCredentials authRequest) {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
         } catch (BadCredentialsException e) {
@@ -48,25 +48,24 @@ public class UserController extends BaseController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String token){
-        try{
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
+        try {
             return userService.logoutUser(token);
-        } catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/profile")
-    public ResponseEntity<?> getProfile(@AuthenticationPrincipal User user){
+    public ResponseEntity<?> getProfile(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(userService.getUserProfile(user));
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> editProfile(@Valid @RequestBody UserEditProfileDto userEditProfileDto, @AuthenticationPrincipal User user){
-        try{
+    public ResponseEntity<?> editProfile(@Valid @RequestBody UserEditProfileDto userEditProfileDto, @AuthenticationPrincipal User user) {
+        try {
             return userService.editUserProfile(userEditProfileDto, user);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

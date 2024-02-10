@@ -1,13 +1,11 @@
 package com.example.BlogBackend.Controllers;
 
-import com.example.BlogBackend.Models.Community.CommunityDto;
 import com.example.BlogBackend.Models.Community.CreateCommunityDto;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.Post.CreatePostDto;
 import com.example.BlogBackend.Models.Post.PostSorting;
 import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Services.CommunityService;
-import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -71,50 +68,43 @@ public class CommunityController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<?> getUsersCommunityList(@AuthenticationPrincipal User user){
-        try{
+    public ResponseEntity<?> getUsersCommunityList(@AuthenticationPrincipal User user) {
+        try {
             return communityService.getUsersCommunities(user);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getInfoAboutCommunity(@PathVariable UUID id){
+    public ResponseEntity<?> getInfoAboutCommunity(@PathVariable UUID id) {
         try {
             return communityService.getInfoAboutCommunity(id);
-        }
-        catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданного сообщества не существует"), HttpStatus.NOT_FOUND);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @PostMapping("/{id}/post")
-    public ResponseEntity<?> createPostInCommunity(@PathVariable UUID id, @RequestBody CreatePostDto createPostDto, @AuthenticationPrincipal User user){
+    public ResponseEntity<?> createPostInCommunity(@PathVariable UUID id, @RequestBody CreatePostDto createPostDto, @AuthenticationPrincipal User user) {
         try {
             return communityService.createPostInCommunity(createPostDto, id, user);
-        }
-        catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданных тэгов не существует"), HttpStatus.NOT_FOUND);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping("/{id}/role")
-    public ResponseEntity<?> getUserGreatestRoleInCommunity(@PathVariable UUID id,  @AuthenticationPrincipal User user){
+    public ResponseEntity<?> getUserGreatestRoleInCommunity(@PathVariable UUID id, @AuthenticationPrincipal User user) {
         try {
             return communityService.getUsersGreatestRole(id, user);
-        }
-        catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданного сообщества не существует"), HttpStatus.NOT_FOUND);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -124,14 +114,12 @@ public class CommunityController {
                                                @RequestParam(name = "tags", required = false) List<UUID> tags,
                                                @RequestParam(name = "page", defaultValue = "1") int page,
                                                @RequestParam(name = "size", defaultValue = "5") int size,
-                                               @RequestParam(name = "sortOrder", defaultValue = "CreateAsc") PostSorting sortOrder){
+                                               @RequestParam(name = "sortOrder", defaultValue = "CreateAsc") PostSorting sortOrder) {
         try {
             return communityService.getCommunityPosts(id, user, tags, page, size, sortOrder);
-        }
-        catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.NOT_FOUND.value(), "Заданного сообщества не существует"), HttpStatus.NOT_FOUND);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Что-то пошло не так"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
