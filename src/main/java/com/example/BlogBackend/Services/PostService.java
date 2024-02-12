@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PostService {
+public class PostService implements IPostService{
     private final PostRepository postRepository;
     private final TagRepository tagRepository;
     private final CommunityRepository communityRepository;

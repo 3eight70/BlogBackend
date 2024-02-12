@@ -24,7 +24,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CommentService {
+public class CommentService implements ICommentService{
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
 

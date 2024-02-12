@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class UserService implements UserDetailsService {
+public class UserService implements UserDetailsService,IUserService{
     private final UserRepository userRepository;
     private final JwtTokenUtils jwtTokenUtils;
     private final RedisRepository redisRepository;
@@ -44,10 +44,12 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().build();
     }
 
+    @Transactional
     public UserProfileDto getUserProfile(User user) {
         return UserMapper.userDtoToUserProfile(user);
     }
 
+    @Transactional
     public ResponseEntity<?> logoutUser(String token) {
         String tokenId = "";
 
@@ -60,6 +62,7 @@ public class UserService implements UserDetailsService {
         return ResponseEntity.ok().build();
     }
 
+    @Transactional
     public ResponseEntity<?> loginUser(LoginCredentials authRequest) {
         User user = userRepository.findByEmail(authRequest.getEmail());
         String token = jwtTokenUtils.generateToken(user);

@@ -1,7 +1,7 @@
 package com.example.BlogBackend.Controllers;
 
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
-import com.example.BlogBackend.Services.AuthorService;
+import com.example.BlogBackend.Services.IAuthorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @RequestMapping("/api/author")
 public class AuthorController {
-    private final AuthorService authorService;
+    private final IAuthorService authorService;
 
     @GetMapping("/list")
     public ResponseEntity<?> getAuthorList() {

@@ -22,7 +22,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AddressService {
+public class AddressService implements  IAddressService{
     private final AddressRepository addressRepository;
     private final HouseRepository houseRepository;
     private final HierarchyRepository hierarchyRepository;

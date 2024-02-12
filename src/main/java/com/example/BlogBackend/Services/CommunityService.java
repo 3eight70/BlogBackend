@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CommunityService {
+public class CommunityService implements ICommunityService{
     private final CommunityRepository communityRepository;
     private final PostService postService;
     private final PostRepository postRepository;
