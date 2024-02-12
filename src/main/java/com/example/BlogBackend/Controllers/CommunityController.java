@@ -6,6 +6,7 @@ import com.example.BlogBackend.Models.Post.CreatePostDto;
 import com.example.BlogBackend.Models.Post.PostSorting;
 import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Services.CommunityService;
+import com.example.BlogBackend.Services.ICommunityService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/community")
 public class CommunityController {
-    private final CommunityService communityService;
+    private final ICommunityService communityService;
 
     @PostMapping
     public ResponseEntity<?> createCommunity(@Valid @RequestBody CreateCommunityDto createCommunityDto, @AuthenticationPrincipal User user) {

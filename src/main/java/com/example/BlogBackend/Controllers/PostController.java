@@ -4,7 +4,7 @@ import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.Post.CreatePostDto;
 import com.example.BlogBackend.Models.Post.PostSorting;
 import com.example.BlogBackend.Models.User.User;
-import com.example.BlogBackend.Services.PostService;
+import com.example.BlogBackend.Services.IPostService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class PostController {
-    private final PostService postService;
+    private final IPostService postService;
 
     @PostMapping("/post")
     public ResponseEntity<?> createPost(@Valid @RequestBody CreatePostDto createPostDto, @AuthenticationPrincipal User user) {

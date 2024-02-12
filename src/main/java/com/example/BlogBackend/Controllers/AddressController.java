@@ -1,7 +1,7 @@
 package com.example.BlogBackend.Controllers;
 
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
-import com.example.BlogBackend.Services.AddressService;
+import com.example.BlogBackend.Services.IAddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RequestMapping("/api/address")
 public class AddressController {
-    private final AddressService addressService;
+    private final IAddressService addressService;
 
     @GetMapping("/search")
     public ResponseEntity<?> search(@RequestParam(defaultValue = "0") Long parentObjectId,

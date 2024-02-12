@@ -4,7 +4,7 @@ import com.example.BlogBackend.Models.Comment.CreateCommentDto;
 import com.example.BlogBackend.Models.Comment.EditCommentDto;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.User.User;
-import com.example.BlogBackend.Services.CommentService;
+import com.example.BlogBackend.Services.ICommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +15,10 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+
 @RequestMapping("/api")
 public class CommentController {
-    private final CommentService commentService;
+    private final ICommentService commentService;
 
     @GetMapping("/comment/{id}/tree")
     public ResponseEntity<?> getNestedComments(@PathVariable UUID id) {

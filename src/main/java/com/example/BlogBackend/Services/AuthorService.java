@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AuthorService {
+public class AuthorService  implements  IAuthorService{
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 

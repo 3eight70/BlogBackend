@@ -2,6 +2,7 @@ package com.example.BlogBackend.Controllers;
 
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.Tag.CreateTagDto;
+import com.example.BlogBackend.Services.ITagService;
 import com.example.BlogBackend.Services.TagService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/tag")
 @RequiredArgsConstructor
 public class TagController {
-    private final TagService tagService;
+    private final ITagService tagService;
 
     @GetMapping
     public ResponseEntity<?> getTags() {

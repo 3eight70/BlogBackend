@@ -5,7 +5,7 @@ import com.example.BlogBackend.Models.User.LoginCredentials;
 import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Models.User.UserEditProfileDto;
 import com.example.BlogBackend.Models.User.UserRegisterModel;
-import com.example.BlogBackend.Services.UserService;
+import com.example.BlogBackend.Services.IUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/account")
 public class UserController {
-    private final UserService userService;
+    private final IUserService userService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
