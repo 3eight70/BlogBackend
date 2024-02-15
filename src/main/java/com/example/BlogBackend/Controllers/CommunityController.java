@@ -5,7 +5,6 @@ import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
 import com.example.BlogBackend.Models.Post.CreatePostDto;
 import com.example.BlogBackend.Models.Post.PostSorting;
 import com.example.BlogBackend.Models.User.User;
-import com.example.BlogBackend.Services.CommunityService;
 import com.example.BlogBackend.Services.ICommunityService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;

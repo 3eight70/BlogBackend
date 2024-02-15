@@ -2,6 +2,8 @@ package com.example.BlogBackend.Services;
 
 import com.example.BlogBackend.Mappers.UserMapper;
 import com.example.BlogBackend.Models.Exceptions.ExceptionResponse;
+import com.example.BlogBackend.Models.Token.JwtResponse;
+import com.example.BlogBackend.Models.Token.RefreshToken;
 import com.example.BlogBackend.Models.User.*;
 import com.example.BlogBackend.Repositories.RedisRepository;
 import com.example.BlogBackend.Repositories.UserRepository;
@@ -15,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.sql.Ref;
 import java.time.LocalDateTime;
 
 @Service
@@ -24,8 +27,9 @@ public class UserService implements UserDetailsService,IUserService{
     private final UserRepository userRepository;
     private final JwtTokenUtils jwtTokenUtils;
     private final RedisRepository redisRepository;
+    private final IRefreshTokenService refreshTokenService;
 
-    private static final String validToken = "Valid";
+    public static final String validToken = "Valid";
 
     @Override
     @Transactional
@@ -69,13 +73,13 @@ public class UserService implements UserDetailsService,IUserService{
     }
 
     @Transactional
-    public ResponseEntity<?> loginUser(LoginCredentials authRequest) {
+    public ResponseEntity<?> loginUser(LoginCredentials authRequest, RefreshToken refreshToken) {
         User user = userRepository.findByEmail(authRequest.getEmail());
         String token = jwtTokenUtils.generateToken(user);
 
         jwtTokenUtils.saveToken(jwtTokenUtils.getIdFromToken(token), validToken);
 
-        return ResponseEntity.ok(new JwtResponse(token));
+        return ResponseEntity.ok(new JwtResponse(token, refreshToken.getToken()));
     }
 
     @Transactional
@@ -96,8 +100,9 @@ public class UserService implements UserDetailsService,IUserService{
 
         userRepository.save(user);
         String token = jwtTokenUtils.generateToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
 
         jwtTokenUtils.saveToken(jwtTokenUtils.getIdFromToken(token), validToken);
-        return ResponseEntity.ok(new JwtResponse(token));
+        return ResponseEntity.ok(new JwtResponse(token, refreshToken.getToken()));
     }
 }

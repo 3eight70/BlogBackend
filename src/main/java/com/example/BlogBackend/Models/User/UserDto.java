@@ -1,10 +1,6 @@
 package com.example.BlogBackend.Models.User;
 
 import com.example.BlogBackend.Models.enums.Gender;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

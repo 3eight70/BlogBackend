@@ -2,8 +2,6 @@ package com.example.BlogBackend.Repositories;
 
 import com.example.BlogBackend.Models.Comment.Comment;
 import com.example.BlogBackend.Models.Post.FullPost;
-import com.example.BlogBackend.Models.User.User;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

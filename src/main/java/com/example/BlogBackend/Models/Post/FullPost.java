@@ -1,7 +1,6 @@
 package com.example.BlogBackend.Models.Post;
 
 import com.example.BlogBackend.Models.Comment.Comment;
-import com.example.BlogBackend.Models.Comment.CommentDto;
 import com.example.BlogBackend.Models.Tag.Tag;
 import com.example.BlogBackend.Models.User.User;
 import jakarta.persistence.*;

@@ -1,8 +1,6 @@
 package com.example.BlogBackend.Models.Community;
 
-import com.example.BlogBackend.Models.User.User;
 import com.example.BlogBackend.Models.User.UserDto;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -11,8 +9,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
