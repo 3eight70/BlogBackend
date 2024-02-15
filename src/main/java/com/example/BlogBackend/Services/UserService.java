@@ -15,6 +15,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -33,6 +35,10 @@ public class UserService implements UserDetailsService,IUserService{
 
     @Transactional
     public ResponseEntity<?> editUserProfile(UserEditProfileDto userEditProfileDto, User user) {
+        if (userEditProfileDto.getBirthDate().isAfter(LocalDateTime.now())) {
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(),
+                    "Дата рождения выставлена в будущем времени"), HttpStatus.BAD_REQUEST);
+        }
         user.setEmail(userEditProfileDto.getEmail());
         user.setGender(userEditProfileDto.getGender());
         user.setFullName(userEditProfileDto.getFullName());
@@ -74,6 +80,10 @@ public class UserService implements UserDetailsService,IUserService{
 
     @Transactional
     public ResponseEntity<?> registerUser(UserRegisterModel userRegisterModel) {
+        if (userRegisterModel.getBirthDate().isAfter(LocalDateTime.now())) {
+            return new ResponseEntity<>(new ExceptionResponse(HttpStatus.BAD_REQUEST.value(),
+                    "Дата рождения выставлена в будущем времени"), HttpStatus.BAD_REQUEST);
+        }
         User user = UserMapper.userRegisterModelToUser(userRegisterModel);
 
         String email = user.getEmail();
