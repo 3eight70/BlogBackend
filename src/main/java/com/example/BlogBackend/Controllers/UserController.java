@@ -54,15 +54,7 @@ public class UserController {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
 
             if (authentication.isAuthenticated()){
-                User user = userService.loadUserByUsername(authRequest.getEmail());
-                Optional<RefreshToken> refresh = refreshTokenRepository.findByUserId(user.getId())
-                        .map(refreshTokenService::verifyExpiration);
-
-                if (refresh.isPresent()) {
-                    return new ResponseEntity<>(new ExceptionResponse(HttpStatus.CONFLICT.value(), "У пользователя уже существует действующий refresh token"), HttpStatus.CONFLICT);
-                }
-
-                RefreshToken refreshToken = refreshTokenService.createRefreshToken(authRequest.getEmail());
+                RefreshToken refreshToken = refreshTokenService.checkRefreshToken(authRequest);
 
                 return userService.loginUser(authRequest, refreshToken);
             }
